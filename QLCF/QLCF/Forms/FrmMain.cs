@@ -1,6 +1,8 @@
 using System;
+using System.Drawing;
 using System.Windows.Forms;
 using QLCF.Forms;
+using QLCF.Helpers;
 using QLCF.Models;
 
 namespace QLCF.Forms
@@ -8,6 +10,9 @@ namespace QLCF.Forms
     public partial class FrmMain : Form
     {
         private bool isLoggingOut = false;
+        private DashboardAdminControl dashboardAdminControl;
+        private StaffWelcomeControl staffWelcomeControl;
+        private Button activeMenuButton = null;
 
         public FrmMain()
         {
@@ -16,13 +21,9 @@ namespace QLCF.Forms
             this.Load += FrmMain_Load;
             this.FormClosing += FrmMain_FormClosing;
 
-            // Gán sự kiện click cho nút Đăng xuất
+            // Event handlers
             this.btnDangXuat.Click += btnDangXuat_Click;
-
-            // Gán sự kiện click riêng cho nút Bán hàng
             this.btnBanHang.Click += btnBanHang_Click;
-
-            // Gán sự kiện click cho các nút Menu còn lại
             this.btnMonAn.Click += btnMonAn_Click;
             this.btnDanhMuc.Click += btnDanhMuc_Click;
             this.btnKhuVucBan.Click += btnKhuVucBan_Click;
@@ -34,14 +35,33 @@ namespace QLCF.Forms
 
         private void FrmMain_Load(object sender, EventArgs e)
         {
-            // Hiển thị thông tin người dùng trên Header
+            UITheme.ApplyStyleToForm(this);
+
+            if (pnlHeader != null) pnlHeader.BackColor = UITheme.HeaderDark;
+            if (pnlMenu != null) pnlMenu.BackColor = UITheme.PrimaryDark;
+            if (pnlLogo != null) pnlLogo.BackColor = Color.FromArgb(15, 23, 42);
+            if (btnDangXuat != null) UITheme.ApplyStyleToButton(btnDangXuat, isDanger: true);
+
+            // Style menu buttons
+            Button[] menuButtons = new Button[] { btnBanHang, btnMonAn, btnDanhMuc, btnKhuVucBan, btnNhanVien, btnHoaDon, btnThongKe, btnDoiMatKhau };
+            foreach (Button b in menuButtons)
+            {
+                if (b == null) continue;
+                b.FlatStyle = FlatStyle.Flat;
+                b.FlatAppearance.BorderSize = 0;
+                b.BackColor = UITheme.PrimaryDark;
+                b.ForeColor = Color.FromArgb(226, 232, 240);
+                b.Font = UITheme.FontHeader;
+                b.Cursor = Cursors.Hand;
+            }
+
+            // Set user header info
             lblXinChao.Text = $"Xin chào, {UserSession.HoTen}";
             lblVaiTro.Text = $"Vai trò: {UserSession.ChucVu}";
 
-            // Phân quyền hiển thị Menu theo UserSession.IsAdmin
+            // Role-based visibility and default view
             if (UserSession.IsAdmin)
             {
-                // Admin: Hiển thị tất cả menu
                 btnBanHang.Visible = true;
                 btnMonAn.Visible = true;
                 btnDanhMuc.Visible = true;
@@ -50,10 +70,12 @@ namespace QLCF.Forms
                 btnHoaDon.Visible = true;
                 btnThongKe.Visible = true;
                 btnDoiMatKhau.Visible = true;
+
+                // Load Dashboard into pnlNoiDung for Admin on startup
+                MoDashboardAdmin();
             }
             else
             {
-                // Nhân viên: Chỉ hiển thị Bán hàng và Đổi mật khẩu
                 btnBanHang.Visible = true;
                 btnDoiMatKhau.Visible = true;
 
@@ -63,7 +85,163 @@ namespace QLCF.Forms
                 btnNhanVien.Visible = false;
                 btnHoaDon.Visible = false;
                 btnThongKe.Visible = false;
+
+                // Load Welcome screen for Staff
+                MoManHinhChaoNhanVien();
             }
+        }
+
+        public void HienThiNoiDung(Control control)
+        {
+            // Clear and dispose any previously embedded forms or temporary controls in pnlNoiDung
+            while (pnlNoiDung.Controls.Count > 0)
+            {
+                Control oldCtrl = pnlNoiDung.Controls[0];
+                pnlNoiDung.Controls.RemoveAt(0);
+
+                if (oldCtrl is Form oldForm)
+                {
+                    oldForm.FormClosed -= OnEmbeddedFormClosed;
+                    oldForm.Close();
+                    oldForm.Dispose();
+                }
+                else if (oldCtrl != dashboardAdminControl && oldCtrl != staffWelcomeControl)
+                {
+                    oldCtrl.Dispose();
+                }
+            }
+
+            if (control is Form frm)
+            {
+                frm.TopLevel = false;
+                frm.FormBorderStyle = FormBorderStyle.None;
+                frm.Dock = DockStyle.Fill;
+                frm.FormClosed += OnEmbeddedFormClosed;
+                pnlNoiDung.Controls.Add(frm);
+                pnlNoiDung.Tag = frm;
+                frm.Show();
+            }
+            else
+            {
+                control.Dock = DockStyle.Fill;
+                pnlNoiDung.Controls.Add(control);
+                control.Show();
+            }
+        }
+
+        private void OnEmbeddedFormClosed(object sender, FormClosedEventArgs e)
+        {
+            // If pnlNoiDung becomes empty after closing an embedded form, return to default view
+            if (pnlNoiDung.Controls.Count == 0)
+            {
+                if (UserSession.IsAdmin)
+                {
+                    MoDashboardAdmin();
+                }
+                else
+                {
+                    MoManHinhChaoNhanVien();
+                }
+            }
+        }
+
+        public void CapNhatMenuDangChon(Button selectedButton)
+        {
+            if (selectedButton == null) return;
+
+            Button[] menuButtons = new Button[] { btnBanHang, btnMonAn, btnDanhMuc, btnKhuVucBan, btnNhanVien, btnHoaDon, btnThongKe, btnDoiMatKhau };
+            foreach (Button b in menuButtons)
+            {
+                if (b == null) continue;
+                b.BackColor = UITheme.PrimaryDark;
+                b.ForeColor = Color.FromArgb(226, 232, 240);
+            }
+
+            // Highlight active button
+            selectedButton.BackColor = Color.FromArgb(15, 23, 42); // Darker Slate focus
+            selectedButton.ForeColor = Color.FromArgb(245, 158, 11); // Amber / Gold text
+
+            activeMenuButton = selectedButton;
+
+            if (pnlActiveIndicator != null)
+            {
+                pnlActiveIndicator.Top = selectedButton.Top;
+                pnlActiveIndicator.Height = selectedButton.Height;
+                pnlActiveIndicator.Visible = true;
+                pnlActiveIndicator.BringToFront();
+            }
+        }
+
+        public void MoDashboardAdmin()
+        {
+            if (!UserSession.IsAdmin) return;
+
+            CapNhatMenuDangChon(btnThongKe);
+
+            if (dashboardAdminControl == null)
+            {
+                dashboardAdminControl = new DashboardAdminControl();
+                dashboardAdminControl.MainForm = this;
+            }
+
+            HienThiNoiDung(dashboardAdminControl);
+            dashboardAdminControl.LoadDashboard();
+        }
+
+        public void MoManHinhChaoNhanVien()
+        {
+            CapNhatMenuDangChon(btnBanHang);
+
+            if (staffWelcomeControl == null)
+            {
+                staffWelcomeControl = new StaffWelcomeControl();
+                staffWelcomeControl.MainForm = this;
+            }
+
+            HienThiNoiDung(staffWelcomeControl);
+        }
+
+        public void MoBanHang()
+        {
+            CapNhatMenuDangChon(btnBanHang);
+
+            FrmBanHang frmBanHang = new FrmBanHang();
+            HienThiNoiDung(frmBanHang);
+        }
+
+        public void MoLichSuHoaDon()
+        {
+            if (!KiemTraQuyenAdmin()) return;
+
+            CapNhatMenuDangChon(btnHoaDon);
+
+            FrmLichSuHoaDon frmLichSu = new FrmLichSuHoaDon();
+            HienThiNoiDung(frmLichSu);
+        }
+
+        public void MoQuanLyMonAn()
+        {
+            if (!KiemTraQuyenAdmin()) return;
+
+            CapNhatMenuDangChon(btnMonAn);
+
+            FrmQuanLyMonAn frmMon = new FrmQuanLyMonAn(1);
+            HienThiNoiDung(frmMon);
+        }
+
+        private bool KiemTraQuyenAdmin()
+        {
+            if (!UserSession.IsAdmin)
+            {
+                MessageBox.Show(
+                    "Bạn không có quyền truy cập chức năng này.",
+                    "Cảnh báo",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+                return false;
+            }
+            return true;
         }
 
         private void btnDangXuat_Click(object sender, EventArgs e)
@@ -87,134 +265,73 @@ namespace QLCF.Forms
         {
             if (!isLoggingOut)
             {
-                // Người dùng đóng bằng nút X -> Đóng/Thoát ứng dụng
                 UserSession.Clear();
                 Application.Exit();
             }
         }
 
-        /// <summary>
-        /// Mở Form Bán hàng khi bấm nút btnBanHang
-        /// </summary>
         private void btnBanHang_Click(object sender, EventArgs e)
         {
-            using (FrmBanHang frmBanHang = new FrmBanHang())
-            {
-                frmBanHang.ShowDialog();
-            }
+            MoBanHang();
         }
 
         private void btnThongKe_Click(object sender, EventArgs e)
         {
-            if (!UserSession.IsAdmin)
-            {
-                MessageBox.Show(
-                    "Bạn không có quyền truy cập chức năng này.",
-                    "Cảnh báo",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
-                return;
-            }
-
-            using (FrmThongKe frmThongKe = new FrmThongKe())
-            {
-                frmThongKe.ShowDialog(this);
-            }
+            MoDashboardAdmin();
         }
 
         private void btnHoaDon_Click(object sender, EventArgs e)
         {
-            if (!UserSession.IsAdmin)
-            {
-                MessageBox.Show(
-                    "Bạn không có quyền truy cập chức năng này.",
-                    "Cảnh báo",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
-                return;
-            }
-
-            using (FrmLichSuHoaDon frmLichSu = new FrmLichSuHoaDon())
-            {
-                frmLichSu.ShowDialog(this);
-            }
+            MoLichSuHoaDon();
         }
 
         private void btnDoiMatKhau_Click(object sender, EventArgs e)
         {
-            using (FrmDoiMatKhau frmDoiMatKhau = new FrmDoiMatKhau())
+            CapNhatMenuDangChon(btnDoiMatKhau);
+
+            FrmDoiMatKhau frmDoiMatKhau = new FrmDoiMatKhau();
+            frmDoiMatKhau.FormClosed += (s, ev) =>
             {
-                if (frmDoiMatKhau.ShowDialog(this) == DialogResult.OK)
+                if (frmDoiMatKhau.DialogResult == DialogResult.OK)
                 {
-                    // Người dùng đã đổi mật khẩu thành công và UserSession đã xóa.
-                    // Đóng FrmMain để quay về màn hình đăng nhập
                     isLoggingOut = true;
                     this.Close();
                 }
-            }
+            };
+            HienThiNoiDung(frmDoiMatKhau);
         }
 
         private void btnDanhMuc_Click(object sender, EventArgs e)
         {
-            if (!UserSession.IsAdmin)
-            {
-                MessageBox.Show(
-                    "Bạn không có quyền truy cập chức năng này.",
-                    "Cảnh báo",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
-                return;
-            }
+            if (!KiemTraQuyenAdmin()) return;
 
-            using (FrmQuanLyMonAn frm = new FrmQuanLyMonAn(0))
-            {
-                frm.ShowDialog(this);
-            }
+            CapNhatMenuDangChon(btnDanhMuc);
+
+            FrmQuanLyMonAn frmDanhMuc = new FrmQuanLyMonAn(0);
+            HienThiNoiDung(frmDanhMuc);
         }
 
         private void btnMonAn_Click(object sender, EventArgs e)
         {
-            if (!UserSession.IsAdmin)
-            {
-                MessageBox.Show(
-                    "Bạn không có quyền truy cập chức năng này.",
-                    "Cảnh báo",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
-                return;
-            }
-
-            using (FrmQuanLyMonAn frm = new FrmQuanLyMonAn(1))
-            {
-                frm.ShowDialog(this);
-            }
+            MoQuanLyMonAn();
         }
 
         private void btnKhuVucBan_Click(object sender, EventArgs e)
         {
-            if (!UserSession.IsAdmin)
-            {
-                MessageBox.Show(
-                    "Bạn không có quyền truy cập chức năng này.",
-                    "Cảnh báo",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
-                return;
-            }
+            if (!KiemTraQuyenAdmin()) return;
 
-            using (FrmQuanLyKhuVucBan frm = new FrmQuanLyKhuVucBan())
-            {
-                frm.ShowDialog(this);
-            }
+            CapNhatMenuDangChon(btnKhuVucBan);
+
+            FrmQuanLyKhuVucBan frmKhuVuc = new FrmQuanLyKhuVucBan();
+            HienThiNoiDung(frmKhuVuc);
         }
 
         private void btnMenu_Click(object sender, EventArgs e)
         {
+            if (!KiemTraQuyenAdmin()) return;
+
+            CapNhatMenuDangChon(btnNhanVien);
+
             MessageBox.Show(
                 "Chức năng này sẽ được xây dựng ở bước tiếp theo.",
                 "Thông báo",

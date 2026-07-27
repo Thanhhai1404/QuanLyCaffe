@@ -1,8 +1,10 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Drawing;
 using System.Windows.Forms;
 using QLCF.Data;
+using QLCF.Helpers;
 using QLCF.Models;
 
 namespace QLCF.Forms
@@ -36,6 +38,19 @@ namespace QLCF.Forms
 
         private void FrmQuanLyKhuVucBan_Load(object sender, EventArgs e)
         {
+            UITheme.ApplyStyleToForm(this);
+
+            if (btnLuuKhuVuc != null) UITheme.ApplyStyleToButton(btnLuuKhuVuc, isPrimary: true);
+            if (btnLuuBan != null) UITheme.ApplyStyleToButton(btnLuuBan, isPrimary: true);
+            if (btnThemKhuVuc != null) UITheme.ApplyStyleToButton(btnThemKhuVuc);
+            if (btnSuaKhuVuc != null) UITheme.ApplyStyleToButton(btnSuaKhuVuc);
+            if (btnLamMoiKhuVuc != null) UITheme.ApplyStyleToButton(btnLamMoiKhuVuc);
+            if (btnThemBan != null) UITheme.ApplyStyleToButton(btnThemBan);
+            if (btnSuaBan != null) UITheme.ApplyStyleToButton(btnSuaBan);
+            if (btnLamMoiBan != null) UITheme.ApplyStyleToButton(btnLamMoiBan);
+            if (btnTimKiemBan != null) UITheme.ApplyStyleToButton(btnTimKiemBan);
+            if (btnDong != null) UITheme.ApplyStyleToButton(btnDong);
+
             // Kiểm tra quyền Admin
             if (!UserSession.IsAdmin)
             {

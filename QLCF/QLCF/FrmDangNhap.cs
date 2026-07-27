@@ -27,6 +27,10 @@ namespace QLCF
 
         private void FrmDangNhap_Load(object sender, EventArgs e)
         {
+            UITheme.ApplyStyleToForm(this);
+            UITheme.ApplyStyleToButton(btnDangNhap, isPrimary: true);
+            UITheme.ApplyStyleToButton(btnThoat, isDanger: false);
+
             // Ký tự mật khẩu ẩn mặc định
             txtMatKhau.UseSystemPasswordChar = true;
 

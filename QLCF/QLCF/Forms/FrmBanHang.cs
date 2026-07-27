@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using QLCF.Data;
+using QLCF.Helpers;
 using QLCF.Models;
 
 namespace QLCF.Forms
@@ -52,6 +53,18 @@ namespace QLCF.Forms
 
         private void FrmBanHang_Load(object sender, EventArgs e)
         {
+            UITheme.ApplyStyleToForm(this);
+
+            // Style nút bấm nổi bật
+            if (btnThanhToan != null) UITheme.ApplyStyleToButton(btnThanhToan, isSuccess: true);
+            if (btnThemMon != null) UITheme.ApplyStyleToButton(btnThemMon, isPrimary: true);
+            if (btnXoaMonKhoiHoaDon != null) UITheme.ApplyStyleToButton(btnXoaMonKhoiHoaDon, isDanger: true);
+            if (btnCapNhatSoLuong != null) UITheme.ApplyStyleToButton(btnCapNhatSoLuong);
+            if (btnChuyenBan != null) UITheme.ApplyStyleToButton(btnChuyenBan);
+            if (btnGopBan != null) UITheme.ApplyStyleToButton(btnGopBan);
+            if (btnLamMoi != null) UITheme.ApplyStyleToButton(btnLamMoi);
+            if (btnDong != null) UITheme.ApplyStyleToButton(btnDong);
+
             // Định dạng DataGridView
             dgvChiTietHoaDon.AutoGenerateColumns = false;
 
@@ -196,42 +209,52 @@ namespace QLCF.Forms
                 Tag = ban
             };
 
-            btn.FlatAppearance.BorderSize = (currentBan != null && currentBan.MaBan == ban.MaBan) ? 3 : 1;
-            btn.FlatAppearance.BorderColor = (currentBan != null && currentBan.MaBan == ban.MaBan) ? Color.Blue : Color.FromArgb(189, 195, 199);
+            bool isSelected = (currentBan != null && currentBan.MaBan == ban.MaBan);
+            btn.FlatAppearance.BorderSize = isSelected ? 3 : 1;
 
             string tamTinhText = DinhDangTien(ban.TamTinh);
 
             if (!ban.DangSuDung)
             {
-                btn.BackColor = Color.FromArgb(189, 195, 199);
-                btn.ForeColor = Color.FromArgb(127, 140, 141);
+                btn.BackColor = Color.FromArgb(241, 245, 249);
+                btn.ForeColor = Color.FromArgb(148, 163, 184);
+                btn.FlatAppearance.BorderColor = Color.FromArgb(226, 232, 240);
                 btn.Enabled = false;
                 btn.Text = $"{ban.TenBan}\n({ban.TenKhuVuc})\n[Ngưng dùng]";
             }
             else
             {
                 btn.Enabled = true;
-                string trangThaiStr = ban.TrangThai.Trim();
+                string trangThaiStr = ban.TrangThai != null ? ban.TrangThai.Trim() : "";
 
                 if (trangThaiStr.Equals("Trống", StringComparison.OrdinalIgnoreCase))
                 {
-                    btn.BackColor = Color.FromArgb(46, 204, 113);
-                    btn.ForeColor = Color.White;
+                    btn.BackColor = UITheme.TableTrongBg;
+                    btn.ForeColor = UITheme.TableTrongText;
+                    btn.FlatAppearance.BorderColor = isSelected ? UITheme.PrimaryAccent : UITheme.TableTrongBorder;
                 }
                 else if (trangThaiStr.Equals("Có khách", StringComparison.OrdinalIgnoreCase))
                 {
-                    btn.BackColor = Color.FromArgb(231, 76, 60);
-                    btn.ForeColor = Color.White;
+                    btn.BackColor = UITheme.TableCoKhachBg;
+                    btn.ForeColor = UITheme.TableCoKhachText;
+                    btn.FlatAppearance.BorderColor = isSelected ? UITheme.PrimaryAccent : UITheme.TableCoKhachBorder;
                 }
                 else if (trangThaiStr.Equals("Đặt trước", StringComparison.OrdinalIgnoreCase))
                 {
-                    btn.BackColor = Color.FromArgb(241, 196, 15);
-                    btn.ForeColor = Color.Black;
+                    btn.BackColor = UITheme.TableDatTruocBg;
+                    btn.ForeColor = UITheme.TableDatTruocText;
+                    btn.FlatAppearance.BorderColor = isSelected ? UITheme.PrimaryAccent : UITheme.TableDatTruocBorder;
                 }
                 else
                 {
-                    btn.BackColor = Color.FromArgb(149, 165, 166);
-                    btn.ForeColor = Color.White;
+                    btn.BackColor = Color.FromArgb(241, 245, 249);
+                    btn.ForeColor = UITheme.TextPrimary;
+                    btn.FlatAppearance.BorderColor = isSelected ? UITheme.PrimaryAccent : UITheme.BorderColor;
+                }
+
+                if (isSelected)
+                {
+                    btn.FlatAppearance.BorderColor = UITheme.PrimaryAccent;
                 }
 
                 btn.Text = $"{ban.TenBan}\n({ban.TenKhuVuc})\n{ban.TrangThai}\n{tamTinhText}";

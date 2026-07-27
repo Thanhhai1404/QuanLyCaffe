@@ -1,8 +1,10 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Drawing;
 using System.Windows.Forms;
 using QLCF.Data;
+using QLCF.Helpers;
 using QLCF.Models;
 
 namespace QLCF.Forms
@@ -20,6 +22,10 @@ namespace QLCF.Forms
 
         private void FrmThongKe_Load(object sender, EventArgs e)
         {
+            UITheme.ApplyStyleToForm(this);
+            if (btnXemThongKe != null) UITheme.ApplyStyleToButton(btnXemThongKe, isPrimary: true);
+            if (btnDong != null) UITheme.ApplyStyleToButton(btnDong);
+
             // Kiểm tra quyền Admin
             if (!UserSession.IsAdmin)
             {

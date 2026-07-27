@@ -129,7 +129,20 @@
     <Compile Include="Forms\FrmQuanLyKhuVucBan.Designer.cs">
       <DependentUpon>FrmQuanLyKhuVucBan.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\DashboardAdminControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\DashboardAdminControl.Designer.cs">
+      <DependentUpon>DashboardAdminControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\StaffWelcomeControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\StaffWelcomeControl.Designer.cs">
+      <DependentUpon>StaffWelcomeControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Helpers\PasswordHelper.cs" />
+    <Compile Include="Helpers\UITheme.cs" />
     <Compile Include="Models\BanModel.cs" />
     <Compile Include="Models\UserSession.cs" />
     <Compile Include="Program.cs" />

@@ -1,8 +1,10 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Drawing;
 using System.Windows.Forms;
 using QLCF.Data;
+using QLCF.Helpers;
 using QLCF.Models;
 
 namespace QLCF.Forms
@@ -41,6 +43,19 @@ namespace QLCF.Forms
 
         private void FrmQuanLyMonAn_Load(object sender, EventArgs e)
         {
+            UITheme.ApplyStyleToForm(this);
+
+            if (btnLuuDanhMuc != null) UITheme.ApplyStyleToButton(btnLuuDanhMuc, isPrimary: true);
+            if (btnLuuMon != null) UITheme.ApplyStyleToButton(btnLuuMon, isPrimary: true);
+            if (btnThemDanhMuc != null) UITheme.ApplyStyleToButton(btnThemDanhMuc);
+            if (btnSuaDanhMuc != null) UITheme.ApplyStyleToButton(btnSuaDanhMuc);
+            if (btnLamMoiDanhMuc != null) UITheme.ApplyStyleToButton(btnLamMoiDanhMuc);
+            if (btnThemMon != null) UITheme.ApplyStyleToButton(btnThemMon);
+            if (btnSuaMon != null) UITheme.ApplyStyleToButton(btnSuaMon);
+            if (btnLamMoiMon != null) UITheme.ApplyStyleToButton(btnLamMoiMon);
+            if (btnTimKiemMonQuanLy != null) UITheme.ApplyStyleToButton(btnTimKiemMonQuanLy);
+            if (btnDong != null) UITheme.ApplyStyleToButton(btnDong);
+
             // Kiểm tra quyền Admin
             if (!UserSession.IsAdmin)
             {
