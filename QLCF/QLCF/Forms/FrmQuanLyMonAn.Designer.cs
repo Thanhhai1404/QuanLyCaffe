@@ -59,7 +59,7 @@ namespace QLCF.Forms
             this.colTenMon = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colTenDM = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colDonGia = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colHinhAnh = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colHinhAnh = new System.Windows.Forms.DataGridViewImageColumn();
             this.colTrangThaiMonText = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.pnlMonAnSearch = new System.Windows.Forms.Panel();
             this.btnTimKiemMonQuanLy = new System.Windows.Forms.Button();
@@ -72,8 +72,9 @@ namespace QLCF.Forms
             this.btnSuaMon = new System.Windows.Forms.Button();
             this.btnThemMon = new System.Windows.Forms.Button();
             this.chkTrangThaiMon = new System.Windows.Forms.CheckBox();
-            this.txtHinhAnh = new System.Windows.Forms.TextBox();
-            this.lblHinhAnh = new System.Windows.Forms.Label();
+            this.btnChonHinhAnh = new System.Windows.Forms.Button();
+            this.picHinhAnhMon = new System.Windows.Forms.PictureBox();
+            this.lblXemTruocHinhAnh = new System.Windows.Forms.Label();
             this.nudDonGia = new System.Windows.Forms.NumericUpDown();
             this.lblDonGia = new System.Windows.Forms.Label();
             this.cboDanhMucMon = new System.Windows.Forms.ComboBox();
@@ -96,6 +97,7 @@ namespace QLCF.Forms
             this.pnlMonAnSearch.SuspendLayout();
             this.pnlMonAnInput.SuspendLayout();
             this.grpChiTietMonAn.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.picHinhAnhMon)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudDonGia)).BeginInit();
             this.SuspendLayout();
             // 
@@ -780,6 +782,7 @@ namespace QLCF.Forms
             this.pnlMonAnInput.ResumeLayout(false);
             this.grpChiTietMonAn.ResumeLayout(false);
             this.grpChiTietMonAn.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.picHinhAnhMon)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudDonGia)).EndInit();
             this.ResumeLayout(false);
 
