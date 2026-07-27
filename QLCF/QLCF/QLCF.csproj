@@ -141,6 +141,7 @@
     <Compile Include="Forms\StaffWelcomeControl.Designer.cs">
       <DependentUpon>StaffWelcomeControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\ImageHelper.cs" />
     <Compile Include="Helpers\PasswordHelper.cs" />
     <Compile Include="Helpers\UITheme.cs" />
     <Compile Include="Models\BanModel.cs" />

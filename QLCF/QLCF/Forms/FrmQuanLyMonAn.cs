@@ -384,32 +384,7 @@ namespace QLCF.Forms
 
         private Image LoadThumbnailImage(string fileName)
         {
-            if (string.IsNullOrWhiteSpace(fileName)) return null;
-
-            string fullPath = fileName;
-            if (!File.Exists(fullPath))
-            {
-                fullPath = Path.Combine(Application.StartupPath, "Images", fileName);
-            }
-
-            if (File.Exists(fullPath))
-            {
-                try
-                {
-                    using (var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                    {
-                        using (var original = Image.FromStream(stream))
-                        {
-                            return new Bitmap(original, new Size(44, 44));
-                        }
-                    }
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-            return null;
+            return ImageHelper.LoadImageSafely(fileName, 44, 44);
         }
 
         private void HienThiAnhPreview(string imagePathOrFileName)
@@ -420,28 +395,7 @@ namespace QLCF.Forms
                 picHinhAnhMon.Image = null;
             }
 
-            if (string.IsNullOrWhiteSpace(imagePathOrFileName)) return;
-
-            string fullPath = imagePathOrFileName;
-            if (!File.Exists(fullPath))
-            {
-                fullPath = Path.Combine(Application.StartupPath, "Images", imagePathOrFileName);
-            }
-
-            if (File.Exists(fullPath))
-            {
-                try
-                {
-                    using (var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                    {
-                        picHinhAnhMon.Image = Image.FromStream(stream);
-                    }
-                }
-                catch
-                {
-                    picHinhAnhMon.Image = null;
-                }
-            }
+            picHinhAnhMon.Image = ImageHelper.LoadImageSafely(imagePathOrFileName, picHinhAnhMon.Width, picHinhAnhMon.Height);
         }
 
         private void btnChonHinhAnh_Click(object sender, EventArgs e)
@@ -584,36 +538,30 @@ namespace QLCF.Forms
                 return;
             }
 
+            int trangThai = chkTrangThaiMon.Checked ? 1 : 0;
+            bool isUpdate = int.TryParse(txtMaMon.Text, out int maMon);
+
             string hinhAnhToSave = currentImageFileName;
             if (!string.IsNullOrEmpty(selectedSourceImagePath) && File.Exists(selectedSourceImagePath))
             {
                 try
                 {
-                    string imagesDir = Path.Combine(Application.StartupPath, "Images");
-                    if (!Directory.Exists(imagesDir))
+                    string savedPath = ImageHelper.SaveImageToAssets(selectedSourceImagePath, isUpdate ? maMon : 0);
+                    if (!string.IsNullOrEmpty(savedPath))
                     {
-                        Directory.CreateDirectory(imagesDir);
+                        hinhAnhToSave = savedPath;
                     }
-
-                    string ext = Path.GetExtension(selectedSourceImagePath);
-                    string newFileName = $"monan_{DateTime.Now:yyyyMMddHHmmssfff}{ext}";
-                    string destPath = Path.Combine(imagesDir, newFileName);
-                    File.Copy(selectedSourceImagePath, destPath, true);
-                    hinhAnhToSave = newFileName;
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show(
-                        "Không thể lưu tệp hình ảnh vào thư mục Images.\nChi tiết: " + ex.Message,
+                        "Không thể lưu tệp hình ảnh vào thư mục Assets/Images.\nChi tiết: " + ex.Message,
                         "Lỗi lưu hình ảnh",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Warning
                     );
                 }
             }
-
-            int trangThai = chkTrangThaiMon.Checked ? 1 : 0;
-            bool isUpdate = int.TryParse(txtMaMon.Text, out int maMon);
 
             try
             {

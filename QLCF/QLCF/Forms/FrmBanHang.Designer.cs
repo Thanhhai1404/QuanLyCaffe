@@ -30,6 +30,12 @@ namespace QLCF.Forms
         {
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
             this.pnlHeader = new System.Windows.Forms.Panel();
             this.lblTieuDe = new System.Windows.Forms.Label();
             this.lblKhuVuc = new System.Windows.Forms.Label();
@@ -186,10 +192,10 @@ namespace QLCF.Forms
             this.pnlRightContainer.Controls.Add(this.pnlThemMonAction);
             this.pnlRightContainer.Controls.Add(this.pnlThongTinBanHeader);
             this.pnlRightContainer.Dock = System.Windows.Forms.DockStyle.Right;
-            this.pnlRightContainer.Location = new System.Drawing.Point(840, 58);
+            this.pnlRightContainer.Location = new System.Drawing.Point(820, 58);
             this.pnlRightContainer.Name = "pnlRightContainer";
             this.pnlRightContainer.Padding = new System.Windows.Forms.Padding(8);
-            this.pnlRightContainer.Size = new System.Drawing.Size(460, 692);
+            this.pnlRightContainer.Size = new System.Drawing.Size(480, 692);
             this.pnlRightContainer.TabIndex = 3;
             // 
             // dgvChiTietHoaDon
@@ -201,23 +207,29 @@ namespace QLCF.Forms
             this.dgvChiTietHoaDon.BorderStyle = System.Windows.Forms.BorderStyle.None;
             dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(41)))), ((int)(((byte)(59)))));
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             dataGridViewCellStyle1.ForeColor = System.Drawing.Color.White;
             dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dgvChiTietHoaDon.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-            this.dgvChiTietHoaDon.ColumnHeadersHeight = 34;
+            this.dgvChiTietHoaDon.ColumnHeadersHeight = 36;
+            this.colGiamSL = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.colTangSL = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.colXoa = new System.Windows.Forms.DataGridViewButtonColumn();
             this.dgvChiTietHoaDon.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.colMaCTHD,
             this.colTenMon,
+            this.colGiamSL,
             this.colSoLuong,
+            this.colTangSL,
             this.colDonGia,
             this.colThanhTien,
-            this.colGhiChu});
+            this.colGhiChu,
+            this.colXoa});
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             dataGridViewCellStyle2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
             dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(226)))), ((int)(((byte)(232)))), ((int)(((byte)(240)))));
             dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.Black;
@@ -228,12 +240,12 @@ namespace QLCF.Forms
             this.dgvChiTietHoaDon.Location = new System.Drawing.Point(8, 123);
             this.dgvChiTietHoaDon.MultiSelect = false;
             this.dgvChiTietHoaDon.Name = "dgvChiTietHoaDon";
-            this.dgvChiTietHoaDon.ReadOnly = true;
+            this.dgvChiTietHoaDon.ReadOnly = false;
             this.dgvChiTietHoaDon.RowHeadersVisible = false;
             this.dgvChiTietHoaDon.RowHeadersWidth = 51;
-            this.dgvChiTietHoaDon.RowTemplate.Height = 32;
+            this.dgvChiTietHoaDon.RowTemplate.Height = 38;
             this.dgvChiTietHoaDon.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvChiTietHoaDon.Size = new System.Drawing.Size(442, 321);
+            this.dgvChiTietHoaDon.Size = new System.Drawing.Size(462, 321);
             this.dgvChiTietHoaDon.TabIndex = 1;
             // 
             // colMaCTHD
@@ -248,47 +260,88 @@ namespace QLCF.Forms
             // colTenMon
             // 
             this.colTenMon.DataPropertyName = "TenMon";
-            this.colTenMon.FillWeight = 125F;
+            this.colTenMon.FillWeight = 140F;
             this.colTenMon.HeaderText = "Tên món";
-            this.colTenMon.MinimumWidth = 6;
+            this.colTenMon.MinimumWidth = 130;
             this.colTenMon.Name = "colTenMon";
             this.colTenMon.ReadOnly = true;
+            // 
+            // colGiamSL
+            // 
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.colGiamSL.DefaultCellStyle = dataGridViewCellStyle3;
+            this.colGiamSL.HeaderText = "-";
+            this.colGiamSL.MinimumWidth = 26;
+            this.colGiamSL.Name = "colGiamSL";
+            this.colGiamSL.Text = "➖";
+            this.colGiamSL.UseColumnTextForButtonValue = true;
+            this.colGiamSL.FillWeight = 22F;
             // 
             // colSoLuong
             // 
             this.colSoLuong.DataPropertyName = "SoLuong";
-            this.colSoLuong.FillWeight = 45F;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.colSoLuong.DefaultCellStyle = dataGridViewCellStyle4;
+            this.colSoLuong.FillWeight = 28F;
             this.colSoLuong.HeaderText = "SL";
-            this.colSoLuong.MinimumWidth = 6;
+            this.colSoLuong.MinimumWidth = 28;
             this.colSoLuong.Name = "colSoLuong";
             this.colSoLuong.ReadOnly = true;
+            // 
+            // colTangSL
+            // 
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.colTangSL.DefaultCellStyle = dataGridViewCellStyle5;
+            this.colTangSL.HeaderText = "+";
+            this.colTangSL.MinimumWidth = 26;
+            this.colTangSL.Name = "colTangSL";
+            this.colTangSL.Text = "➕";
+            this.colTangSL.UseColumnTextForButtonValue = true;
+            this.colTangSL.FillWeight = 22F;
             // 
             // colDonGia
             // 
             this.colDonGia.DataPropertyName = "DonGia";
-            this.colDonGia.FillWeight = 75F;
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle6.Format = "#,##0";
+            this.colDonGia.DefaultCellStyle = dataGridViewCellStyle6;
+            this.colDonGia.FillWeight = 55F;
             this.colDonGia.HeaderText = "Đơn giá";
-            this.colDonGia.MinimumWidth = 6;
+            this.colDonGia.MinimumWidth = 65;
             this.colDonGia.Name = "colDonGia";
             this.colDonGia.ReadOnly = true;
             // 
             // colThanhTien
             // 
             this.colThanhTien.DataPropertyName = "ThanhTien";
-            this.colThanhTien.FillWeight = 85F;
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle7.Format = "#,##0";
+            this.colThanhTien.DefaultCellStyle = dataGridViewCellStyle7;
+            this.colThanhTien.FillWeight = 65F;
             this.colThanhTien.HeaderText = "Thành tiền";
-            this.colThanhTien.MinimumWidth = 6;
+            this.colThanhTien.MinimumWidth = 75;
             this.colThanhTien.Name = "colThanhTien";
             this.colThanhTien.ReadOnly = true;
             // 
             // colGhiChu
             // 
             this.colGhiChu.DataPropertyName = "GhiChu";
-            this.colGhiChu.FillWeight = 75F;
+            this.colGhiChu.FillWeight = 45F;
             this.colGhiChu.HeaderText = "Ghi chú";
-            this.colGhiChu.MinimumWidth = 6;
+            this.colGhiChu.MinimumWidth = 50;
             this.colGhiChu.Name = "colGhiChu";
-            this.colGhiChu.ReadOnly = true;
+            this.colGhiChu.ReadOnly = false;
+            // 
+            // colXoa
+            // 
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.colXoa.DefaultCellStyle = dataGridViewCellStyle8;
+            this.colXoa.HeaderText = "Xóa";
+            this.colXoa.MinimumWidth = 26;
+            this.colXoa.Name = "colXoa";
+            this.colXoa.Text = "❌";
+            this.colXoa.UseColumnTextForButtonValue = true;
+            this.colXoa.FillWeight = 22F;
             // 
             // pnlThemMonAction
             // 
@@ -764,9 +817,12 @@ namespace QLCF.Forms
         private System.Windows.Forms.Button btnGopBan;
         private System.Windows.Forms.DataGridViewTextBoxColumn colMaCTHD;
         private System.Windows.Forms.DataGridViewTextBoxColumn colTenMon;
+        private System.Windows.Forms.DataGridViewButtonColumn colGiamSL;
         private System.Windows.Forms.DataGridViewTextBoxColumn colSoLuong;
+        private System.Windows.Forms.DataGridViewButtonColumn colTangSL;
         private System.Windows.Forms.DataGridViewTextBoxColumn colDonGia;
         private System.Windows.Forms.DataGridViewTextBoxColumn colThanhTien;
         private System.Windows.Forms.DataGridViewTextBoxColumn colGhiChu;
+        private System.Windows.Forms.DataGridViewButtonColumn colXoa;
     }
 }

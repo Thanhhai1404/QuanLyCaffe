@@ -44,6 +44,8 @@ namespace QLCF.Forms
             // Đăng ký sự kiện chọn dòng, cập nhật số lượng và xóa món trong hóa đơn
             this.dgvChiTietHoaDon.CellClick += dgvChiTietHoaDon_CellClick;
             this.dgvChiTietHoaDon.SelectionChanged += dgvChiTietHoaDon_SelectionChanged;
+            this.dgvChiTietHoaDon.CellContentClick += dgvChiTietHoaDon_CellContentClick;
+            this.dgvChiTietHoaDon.CellEndEdit += dgvChiTietHoaDon_CellEndEdit;
             this.btnCapNhatSoLuong.Click += btnCapNhatSoLuong_Click;
             this.btnXoaMonKhoiHoaDon.Click += btnXoaMonKhoiHoaDon_Click;
             this.btnThanhToan.Click += btnThanhToan_Click;
@@ -357,7 +359,7 @@ namespace QLCF.Forms
                 flpDanhMuc.SuspendLayout();
                 flpDanhMuc.Controls.Clear();
 
-                // Nút "Tất cả"
+                // Nút "Tất cả" (Pill Button Active mặc định)
                 Button btnAll = new Button
                 {
                     Text = "Tất cả",
@@ -367,7 +369,7 @@ namespace QLCF.Forms
                     Cursor = Cursors.Hand,
                     FlatStyle = FlatStyle.Flat,
                     Font = new Font("Segoe UI", 9.5F, FontStyle.Bold, GraphicsUnit.Point),
-                    BackColor = Color.FromArgb(245, 158, 11),
+                    BackColor = Color.FromArgb(217, 119, 6), // Amber-600
                     ForeColor = Color.White,
                     Tag = null
                 };
@@ -400,8 +402,8 @@ namespace QLCF.Forms
                                     Cursor = Cursors.Hand,
                                     FlatStyle = FlatStyle.Flat,
                                     Font = new Font("Segoe UI", 9.5F, FontStyle.Regular, GraphicsUnit.Point),
-                                    BackColor = Color.FromArgb(226, 232, 240),
-                                    ForeColor = Color.FromArgb(51, 65, 85),
+                                    BackColor = Color.FromArgb(241, 245, 249), // Slate-100
+                                    ForeColor = Color.FromArgb(71, 85, 105), // Slate-600
                                     Tag = dm
                                 };
                                 btnDM.FlatAppearance.BorderSize = 0;
@@ -429,13 +431,13 @@ namespace QLCF.Forms
                 {
                     if (ctrl is Button b)
                     {
-                        b.BackColor = Color.FromArgb(226, 232, 240);
-                        b.ForeColor = Color.FromArgb(51, 65, 85);
+                        b.BackColor = Color.FromArgb(241, 245, 249);
+                        b.ForeColor = Color.FromArgb(71, 85, 105);
                         b.Font = new Font("Segoe UI", 9.5F, FontStyle.Regular, GraphicsUnit.Point);
                     }
                 }
 
-                btn.BackColor = Color.FromArgb(245, 158, 11);
+                btn.BackColor = Color.FromArgb(217, 119, 6);
                 btn.ForeColor = Color.White;
                 btn.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold, GraphicsUnit.Point);
 
@@ -489,8 +491,8 @@ namespace QLCF.Forms
                                     HinhAnh = reader["HinhAnh"] != DBNull.Value ? reader["HinhAnh"].ToString() : null
                                 };
 
-                                Button btnMon = TaoButtonMonAn(mon);
-                                flpMonAn.Controls.Add(btnMon);
+                                Panel pnlCard = TaoCardMonAn(mon);
+                                flpMonAn.Controls.Add(pnlCard);
                             }
                         }
                     }
@@ -505,65 +507,112 @@ namespace QLCF.Forms
             }
         }
 
-        private Button TaoButtonMonAn(MonAnModel mon)
+        private Panel TaoCardMonAn(MonAnModel mon)
         {
-            Button btn = new Button
+            Panel pnlCard = new Panel
             {
-                Width = 130,
-                Height = 92,
+                Width = 145,
+                Height = 175,
                 Margin = new Padding(6),
                 Cursor = Cursors.Hand,
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point),
-                BackColor = Color.FromArgb(248, 250, 252),
-                ForeColor = Color.FromArgb(15, 23, 42),
-                Text = $"{mon.TenMon}\n\n{DinhDangTien(mon.DonGia)}",
+                BackColor = Color.White,
+                BorderStyle = BorderStyle.FixedSingle,
                 Tag = mon
             };
 
-            btn.FlatAppearance.BorderSize = 1;
-            btn.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-
-            // Kiểm tra và hiển thị ảnh nếu đường dẫn hợp lệ
-            if (!string.IsNullOrWhiteSpace(mon.HinhAnh) && File.Exists(mon.HinhAnh))
+            PictureBox picThumb = new PictureBox
             {
-                try
+                Width = 135,
+                Height = 95,
+                Location = new Point(4, 4),
+                SizeMode = PictureBoxSizeMode.Zoom,
+                BackColor = Color.FromArgb(248, 250, 252),
+                Tag = mon,
+                Image = ImageHelper.LoadImageSafely(mon.HinhAnh, 135, 95, mon.TenMon)
+            };
+
+            Label lblTen = new Label
+            {
+                Text = mon.TenMon,
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold, GraphicsUnit.Point),
+                ForeColor = Color.FromArgb(15, 23, 42),
+                Location = new Point(4, 103),
+                Size = new Size(135, 42),
+                TextAlign = ContentAlignment.TopLeft,
+                AutoEllipsis = true,
+                Tag = mon
+            };
+
+            Label lblGia = new Label
+            {
+                Text = DinhDangTien(mon.DonGia),
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold, GraphicsUnit.Point),
+                ForeColor = Color.FromArgb(217, 119, 6), // Amber-600 Accent
+                Location = new Point(4, 148),
+                Size = new Size(135, 22),
+                TextAlign = ContentAlignment.MiddleRight,
+                Tag = mon
+            };
+
+            pnlCard.Controls.Add(picThumb);
+            pnlCard.Controls.Add(lblTen);
+            pnlCard.Controls.Add(lblGia);
+
+            // Gán hiệu ứng Hover và sự kiện Click Fast Order cho Card và tất cả các control con
+            Control[] cardControls = new Control[] { pnlCard, picThumb, lblTen, lblGia };
+            foreach (Control ctrl in cardControls)
+            {
+                ctrl.MouseEnter += (s, e) =>
                 {
-                    btn.Image = Image.FromFile(mon.HinhAnh);
-                    btn.ImageAlign = ContentAlignment.TopCenter;
-                    btn.TextAlign = ContentAlignment.BottomCenter;
-                }
-                catch
+                    pnlCard.BackColor = Color.FromArgb(254, 243, 199); // Amber-50
+                };
+                ctrl.MouseLeave += (s, e) =>
                 {
-                    // Nếu lỗi khi đọc file ảnh thì không làm sập ứng dụng
-                }
+                    pnlCard.BackColor = Color.White;
+                };
+                ctrl.Click += (s, e) =>
+                {
+                    MonAn_FastOrderClick(mon);
+                };
             }
 
-            btn.Click += MonAn_Click;
-
-            return btn;
+            return pnlCard;
         }
 
-        private void MonAn_Click(object sender, EventArgs e)
+        private void MonAn_FastOrderClick(MonAnModel mon)
         {
-            if (sender is Button btn && btn.Tag is MonAnModel mon)
+            if (currentBan == null)
             {
-                // Đổi màu viền card món được chọn
-                if (currentMonAnButton != null)
+                lblHuongDan.Text = "⚠️ Vui lòng chọn một bàn bên trái trước khi chọn món!";
+                lblHuongDan.ForeColor = Color.Red;
+                lblHuongDan.Visible = true;
+                return;
+            }
+
+            try
+            {
+                using (SqlConnection conn = Db.CreateConnection())
                 {
-                    currentMonAnButton.FlatAppearance.BorderSize = 1;
-                    currentMonAnButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-                    currentMonAnButton.BackColor = Color.FromArgb(248, 250, 252);
+                    using (SqlCommand cmd = new SqlCommand("sp_ThemMonVaoHoaDon", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.Add("@MaBan", SqlDbType.Int).Value = currentBan.MaBan;
+                        cmd.Parameters.Add("@MaNV", SqlDbType.Int).Value = UserSession.MaNV;
+                        cmd.Parameters.Add("@MaMon", SqlDbType.Int).Value = mon.MaMon;
+                        cmd.Parameters.Add("@SoLuong", SqlDbType.Int).Value = 1;
+                        cmd.Parameters.Add("@GhiChu", SqlDbType.NVarChar, 300).Value = DBNull.Value;
+
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                    }
                 }
 
-                currentMonAn = mon;
-                currentMonAnButton = btn;
-
-                btn.FlatAppearance.BorderSize = 2;
-                btn.FlatAppearance.BorderColor = Color.FromArgb(37, 99, 235);
-                btn.BackColor = Color.FromArgb(239, 246, 255);
-
-                lblMonDangChon.Text = "Món đang chọn: " + mon.TenMon;
+                // Fast UI Refresh không MessageBox!
+                LamMoiDuLieuBanDangChon();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi thêm món vào hóa đơn.\n\nChi tiết: " + ex.Message, "Lỗi CSDL", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -653,14 +702,32 @@ namespace QLCF.Forms
 
                 dgvChiTietHoaDon.DataSource = listChiTiet;
 
-                // Format hiển thị cho DonGia và ThanhTien trong DataGridView
+                // Format hiển thị và lề cho các cột trong DataGridView Hóa đơn
                 if (dgvChiTietHoaDon.Columns["colDonGia"] != null)
                 {
-                    dgvChiTietHoaDon.Columns["colDonGia"].DefaultCellStyle.Format = "N0";
+                    dgvChiTietHoaDon.Columns["colDonGia"].DefaultCellStyle.Format = "#,##0";
+                    dgvChiTietHoaDon.Columns["colDonGia"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
                 }
                 if (dgvChiTietHoaDon.Columns["colThanhTien"] != null)
                 {
-                    dgvChiTietHoaDon.Columns["colThanhTien"].DefaultCellStyle.Format = "N0";
+                    dgvChiTietHoaDon.Columns["colThanhTien"].DefaultCellStyle.Format = "#,##0";
+                    dgvChiTietHoaDon.Columns["colThanhTien"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                }
+                if (dgvChiTietHoaDon.Columns["colSoLuong"] != null)
+                {
+                    dgvChiTietHoaDon.Columns["colSoLuong"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                }
+                if (dgvChiTietHoaDon.Columns["colGiamSL"] != null)
+                {
+                    dgvChiTietHoaDon.Columns["colGiamSL"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                }
+                if (dgvChiTietHoaDon.Columns["colTangSL"] != null)
+                {
+                    dgvChiTietHoaDon.Columns["colTangSL"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                }
+                if (dgvChiTietHoaDon.Columns["colXoa"] != null)
+                {
+                    dgvChiTietHoaDon.Columns["colXoa"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
                 }
 
                 decimal tongTamTinh = listChiTiet.Sum(x => x.ThanhTien);
@@ -802,6 +869,92 @@ namespace QLCF.Forms
         private void dgvChiTietHoaDon_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             ChonDongChiTietHoaDon();
+        }
+
+        private void dgvChiTietHoaDon_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+
+            string colName = dgvChiTietHoaDon.Columns[e.ColumnIndex].Name;
+            if (dgvChiTietHoaDon.Rows[e.RowIndex].DataBoundItem is ChiTietHoaDonModel item)
+            {
+                if (colName == "colGiamSL")
+                {
+                    int newSL = item.SoLuong - 1;
+                    CapNhatSoLuongCTHDDirect(item.MaCTHD, newSL);
+                }
+                else if (colName == "colTangSL")
+                {
+                    int newSL = item.SoLuong + 1;
+                    CapNhatSoLuongCTHDDirect(item.MaCTHD, newSL);
+                }
+                else if (colName == "colXoa")
+                {
+                    CapNhatSoLuongCTHDDirect(item.MaCTHD, 0);
+                }
+            }
+        }
+
+        private void CapNhatSoLuongCTHDDirect(int maCTHD, int soLuongMoi)
+        {
+            try
+            {
+                using (SqlConnection conn = Db.CreateConnection())
+                {
+                    using (SqlCommand cmd = new SqlCommand("sp_CapNhatSoLuongMon", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.Add("@MaNV", SqlDbType.Int).Value = UserSession.MaNV;
+                        cmd.Parameters.Add("@MaCTHD", SqlDbType.Int).Value = maCTHD;
+                        cmd.Parameters.Add("@SoLuongMoi", SqlDbType.Int).Value = Math.Max(0, soLuongMoi);
+
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                LamMoiDuLieuBanDangChon();
+                DatLaiMonDangChon();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi cập nhật số lượng món.\n\nChi tiết: " + ex.Message, "Lỗi CSDL", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void dgvChiTietHoaDon_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+
+            string colName = dgvChiTietHoaDon.Columns[e.ColumnIndex].Name;
+            if (colName == "colGhiChu" && dgvChiTietHoaDon.Rows[e.RowIndex].DataBoundItem is ChiTietHoaDonModel item)
+            {
+                string ghiChuMoi = Convert.ToString(dgvChiTietHoaDon.Rows[e.RowIndex].Cells["colGhiChu"].Value);
+                CapNhatGhiChuCTHDDirect(item.MaCTHD, ghiChuMoi);
+            }
+        }
+
+        private void CapNhatGhiChuCTHDDirect(int maCTHD, string ghiChu)
+        {
+            try
+            {
+                using (SqlConnection conn = Db.CreateConnection())
+                {
+                    string sql = "UPDATE dbo.ChiTietHoaDon SET GhiChu = @GhiChu WHERE MaCTHD = @MaCTHD";
+                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.Add("@MaCTHD", SqlDbType.Int).Value = maCTHD;
+                        cmd.Parameters.Add("@GhiChu", SqlDbType.NVarChar, 300).Value = string.IsNullOrWhiteSpace(ghiChu) ? (object)DBNull.Value : ghiChu.Trim();
+
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi lưu ghi chú món.\n\nChi tiết: " + ex.Message, "Lỗi CSDL", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void dgvChiTietHoaDon_SelectionChanged(object sender, EventArgs e)
