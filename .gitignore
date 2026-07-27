@@ -1,0 +1,13 @@
+## Visual Studio & C# gitignore ##
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.cache
+*.log
+packages/
+[Bb]in/
+[Oo]bj/

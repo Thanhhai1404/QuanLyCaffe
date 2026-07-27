@@ -1,0 +1,151 @@
+Tôi đang làm ứng dụng quản lý quán café bằng C# WinForms (.NET Framework) và SQL Server.
+
+THÔNG TIN KẾT NỐI:
+- SQL Server: DOHAI\SQLEXPRESS
+- Database: QLCF
+- Windows Authentication
+- Connection string:
+  Data Source=DOHAI\SQLEXPRESS;Initial Catalog=QLCF;Integrated Security=True;TrustServerCertificate=True
+- Project hiện đã kết nối SQL thành công.
+- Dùng System.Data.SqlClient.
+- Namespace project: QLCF.
+
+YÊU CẦU QUAN TRỌNG:
+- Không tự tạo lại database và không tự sửa cấu trúc database hiện có nếu chưa thật sự cần thiết.
+- Không viết SQL nối chuỗi trực tiếp; luôn dùng SqlParameter.
+- Các nghiệp vụ hóa đơn/order phải gọi Stored Procedure SQL, không INSERT/UPDATE trực tiếp trong Form.
+- Code cần tách rõ: Data, Models, Services, Forms.
+- Giao diện hiện đại, dễ nhìn, tiếng Việt, phù hợp phần mềm bán hàng quán café.
+- Có xử lý try/catch, thông báo lỗi rõ ràng, validation dữ liệu đầu vào.
+- Sau mọi thao tác gọi món/thanh toán/chuyển bàn/gộp bàn/tách hóa đơn phải refresh dữ liệu.
+
+DATABASE HIỆN CÓ:
+Bảng:
+- NhanVien
+- KhuVuc
+- Ban
+- DanhMuc
+- MonAn
+- HoaDon
+- ChiTietHoaDon
+- NhatKyHeThong
+
+Views:
+- vw_SoDoBan
+- vw_LichSuHoaDon
+
+Stored Procedures:
+- sp_DangNhapLayThongTin
+- sp_TaoNhanVien
+- sp_DoiTrangThaiNhanVien
+- sp_CapNhatMatKhau
+- sp_ThemMonVaoHoaDon
+- sp_CapNhatSoLuongMon
+- sp_ThanhToan
+- sp_HuyHoaDon
+- sp_ChuyenBan
+- sp_GopBan
+- sp_TachHoaDon
+- sp_GetDashboardSummary
+- sp_TopMonBanChay
+
+PHÂN QUYỀN:
+1. Admin:
+- Được dùng tất cả chức năng.
+- Quản lý món ăn, danh mục, khu vực, bàn.
+- Quản lý tài khoản nhân viên: tạo tài khoản, khóa/mở khóa.
+- Xem lịch sử hóa đơn, dashboard, báo cáo.
+- Hủy hóa đơn.
+- Giảm giá tối đa 100%.
+
+2. Nhân viên:
+- Đăng nhập.
+- Xem sơ đồ bàn.
+- Gọi món, thêm món vào hóa đơn.
+- Sửa số lượng/xóa món trong hóa đơn chưa thanh toán.
+- Thanh toán.
+- Chuyển bàn, gộp bàn, tách hóa đơn.
+- Đổi mật khẩu cá nhân.
+- Không được thấy hoặc truy cập các màn quản trị, dashboard, quản lý nhân viên, quản lý món/danh mục/bàn.
+- Chỉ được giảm giá tối đa 10% (SQL SP cũng đã kiểm tra).
+
+ĐĂNG NHẬP:
+- Tạo FrmDangNhap.
+- Input: tên đăng nhập, mật khẩu; checkbox hiện/ẩn mật khẩu; nút Đăng nhập và Thoát.
+- Khi đăng nhập, gọi sp_DangNhapLayThongTin với TenDangNhap.
+- Hash mật khẩu nằm ở cột MatKhauHash.
+- Dùng BCrypt.Net-Next để BCrypt.Verify mật khẩu người dùng nhập với MatKhauHash lấy từ SQL.
+- Nếu đúng, lưu session gồm MaNV, HoTen, ChucVu/Role.
+- Tạo class UserSession static.
+- Admin mở toàn bộ menu/chức năng; NhanVien bị ẩn/khóa các menu quản trị.
+
+FORM CHÍNH:
+- Tạo FrmMain dạng dashboard/menu hiện đại.
+- Có menu: Bán hàng, Quản lý món, Danh mục, Khu vực/Bàn, Nhân viên, Lịch sử hóa đơn, Thống kê, Đổi mật khẩu, Đăng xuất.
+- Hiển thị tên nhân viên đang đăng nhập và vai trò.
+- Khi đăng xuất, xóa UserSession và quay về FrmDangNhap.
+
+FORM BÁN HÀNG (QUAN TRỌNG NHẤT):
+- Hiển thị sơ đồ bàn từ vw_SoDoBan.
+- Có lọc theo khu vực.
+- Màu trạng thái bàn:
+  + Trống: xanh lá
+  + Có khách: đỏ/cam
+  + Đặt trước: vàng
+- Khi chọn bàn: hiển thị hóa đơn đang mở và danh sách món đã gọi.
+- Hiển thị danh mục món, danh sách món, tìm kiếm món.
+- Chọn món + số lượng + ghi chú (ví dụ: ít đá, không đường) để gọi món.
+- Gọi sp_ThemMonVaoHoaDon.
+- Hiển thị tên món, đơn giá, số lượng, thành tiền, ghi chú, tổng tạm tính.
+- Cho phép tăng/giảm số lượng hoặc xóa món bằng sp_CapNhatSoLuongMon.
+- Có nút: Thanh toán, Chuyển bàn, Gộp bàn, Tách hóa đơn, Refresh.
+- Không cho sửa order nếu hóa đơn đã thanh toán/hủy.
+
+THANH TOÁN:
+- Tạo FrmThanhToan hoặc popup thanh toán.
+- Nhận MaHD đang mở.
+- Hiển thị tổng tiền gốc, phần trăm giảm giá, tổng phải trả.
+- Chọn phương thức: Tiền mặt, Chuyển khoản, QR, Thẻ.
+- Nếu tiền mặt: nhập tiền khách đưa và tính tiền thừa.
+- Gọi sp_ThanhToan với:
+  @MaHD
+  @MaNVThanhToan
+  @GiamGia
+  @PhuongThucThanhToan
+  @TienKhachDua
+- Sau thành công: thông báo, đóng form thanh toán, refresh sơ đồ bàn.
+- Có thể làm chức năng in hóa đơn ở giai đoạn sau.
+
+CHUYỂN/GỘP/TÁCH BÀN:
+- Chuyển bàn: chọn bàn đích đang trống, gọi sp_ChuyenBan.
+- Gộp bàn: chọn bàn chính và bàn phụ đều đang có khách, gọi sp_GopBan.
+- Tách hóa đơn: chọn bàn trống mới, chọn các dòng món/số lượng cần tách, truyền Table-Valued Parameter dbo.TVP_TachHoaDon vào sp_TachHoaDon.
+- Sau mỗi thao tác cần cập nhật lại sơ đồ bàn và chi tiết hóa đơn.
+
+ADMIN - QUẢN LÝ DỮ LIỆU:
+- Form quản lý món: hiển thị, tìm kiếm, thêm, sửa, ngừng bán món; có tên món, danh mục, đơn giá, hình ảnh, trạng thái.
+- Form quản lý danh mục: thêm/sửa/ẩn danh mục.
+- Form quản lý khu vực/bàn: thêm/sửa/đổi trạng thái bàn, không xóa dữ liệu có lịch sử.
+- Form quản lý nhân viên: tạo tài khoản, chọn vai trò Admin/NhanVien, khóa/mở tài khoản.
+- Không xóa cứng món, bàn, danh mục đã phát sinh lịch sử; chỉ cập nhật trạng thái.
+
+HÓA ĐƠN VÀ BÁO CÁO:
+- Form lịch sử hóa đơn dùng vw_LichSuHoaDon.
+- Có lọc theo khoảng ngày, trạng thái hóa đơn, tìm theo mã hóa đơn.
+- Admin được hủy hóa đơn đang mở bằng sp_HuyHoaDon; bắt buộc nhập lý do hủy.
+- Dashboard chỉ dành cho Admin.
+- Gọi sp_GetDashboardSummary để hiển thị doanh thu, số hóa đơn, tổng món bán theo ngày/khoảng ngày.
+- Gọi sp_TopMonBanChay để làm biểu đồ top món bán chạy.
+- Có DataGridView lịch sử và Chart biểu đồ.
+
+THỨ TỰ CẦN IMPLEMENT:
+1. Models, Db.cs, UserSession, Services cơ bản.
+2. FrmDangNhap chạy được bằng BCrypt.
+3. FrmMain và phân quyền menu.
+4. FrmBanHang: sơ đồ bàn, gọi món, chi tiết order.
+5. Thanh toán.
+6. Sửa/xóa món, chuyển/gộp/tách bàn.
+7. Quản lý món/danh mục/khu vực/bàn/nhân viên cho Admin.
+8. Lịch sử hóa đơn, hủy hóa đơn.
+9. Dashboard, biểu đồ, hoàn thiện UI.
+
