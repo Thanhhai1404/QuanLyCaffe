@@ -7,19 +7,6 @@ namespace QLCF.Forms
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-
         #region Windows Form Designer generated code
 
         /// <summary>
@@ -48,6 +35,15 @@ namespace QLCF.Forms
             this.nudTienKhachDua = new System.Windows.Forms.NumericUpDown();
             this.lblTienThuaLabel = new System.Windows.Forms.Label();
             this.lblTienThuaVal = new System.Windows.Forms.Label();
+            this.pnlVietQR = new System.Windows.Forms.Panel();
+            this.picQRCode = new System.Windows.Forms.PictureBox();
+            this.lblQRBankName = new System.Windows.Forms.Label();
+            this.lblQRAccountNo = new System.Windows.Forms.Label();
+            this.lblQRAccountName = new System.Windows.Forms.Label();
+            this.lblQRAmount = new System.Windows.Forms.Label();
+            this.lblQRContent = new System.Windows.Forms.Label();
+            this.lblQRStatus = new System.Windows.Forms.Label();
+            this.btnXacNhanCKThuCong = new System.Windows.Forms.Button();
             this.pnlButtons = new System.Windows.Forms.Panel();
             this.btnXacNhanThanhToan = new System.Windows.Forms.Button();
             this.btnHuyThanhToan = new System.Windows.Forms.Button();
@@ -55,6 +51,8 @@ namespace QLCF.Forms
             this.pnlMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudGiamGia)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudTienKhachDua)).BeginInit();
+            this.pnlVietQR.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.picQRCode)).BeginInit();
             this.pnlButtons.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -100,11 +98,13 @@ namespace QLCF.Forms
             this.pnlMain.Controls.Add(this.nudTienKhachDua);
             this.pnlMain.Controls.Add(this.lblTienThuaLabel);
             this.pnlMain.Controls.Add(this.lblTienThuaVal);
+            this.pnlMain.Controls.Add(this.pnlVietQR);
+            this.pnlMain.AutoScroll = true;
             this.pnlMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlMain.Location = new System.Drawing.Point(0, 55);
             this.pnlMain.Name = "pnlMain";
             this.pnlMain.Padding = new System.Windows.Forms.Padding(25, 15, 25, 15);
-            this.pnlMain.Size = new System.Drawing.Size(482, 385);
+            this.pnlMain.Size = new System.Drawing.Size(520, 595);
             this.pnlMain.TabIndex = 1;
             // 
             // lblMaHDInfo
@@ -298,15 +298,110 @@ namespace QLCF.Forms
             this.lblTienThuaVal.TabIndex = 16;
             this.lblTienThuaVal.Text = "0 đ";
             // 
+            // pnlVietQR
+            // 
+            this.pnlVietQR.Controls.Add(this.picQRCode);
+            this.pnlVietQR.Controls.Add(this.lblQRBankName);
+            this.pnlVietQR.Controls.Add(this.lblQRAccountNo);
+            this.pnlVietQR.Controls.Add(this.lblQRAccountName);
+            this.pnlVietQR.Controls.Add(this.lblQRAmount);
+            this.pnlVietQR.Controls.Add(this.lblQRContent);
+            this.pnlVietQR.Controls.Add(this.lblQRStatus);
+            this.pnlVietQR.Controls.Add(this.btnXacNhanCKThuCong);
+            this.pnlVietQR.Location = new System.Drawing.Point(25, 365);
+            this.pnlVietQR.Name = "pnlVietQR";
+            this.pnlVietQR.Size = new System.Drawing.Size(460, 280);
+            this.pnlVietQR.TabIndex = 20;
+            this.pnlVietQR.Visible = false;
+            // 
+            // picQRCode
+            // 
+            this.picQRCode.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.picQRCode.Location = new System.Drawing.Point(5, 5);
+            this.picQRCode.Name = "picQRCode";
+            this.picQRCode.Size = new System.Drawing.Size(200, 230);
+            this.picQRCode.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.picQRCode.TabIndex = 0;
+            this.picQRCode.TabStop = false;
+            // 
+            // lblQRBankName
+            // 
+            this.lblQRBankName.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.lblQRBankName.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
+            this.lblQRBankName.Location = new System.Drawing.Point(215, 10);
+            this.lblQRBankName.Name = "lblQRBankName";
+            this.lblQRBankName.Size = new System.Drawing.Size(240, 20);
+            this.lblQRBankName.Text = "Ngân hàng: --";
+            // 
+            // lblQRAccountNo
+            // 
+            this.lblQRAccountNo.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblQRAccountNo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.lblQRAccountNo.Location = new System.Drawing.Point(215, 35);
+            this.lblQRAccountNo.Name = "lblQRAccountNo";
+            this.lblQRAccountNo.Size = new System.Drawing.Size(240, 20);
+            this.lblQRAccountNo.Text = "STK: --";
+            // 
+            // lblQRAccountName
+            // 
+            this.lblQRAccountName.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblQRAccountName.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.lblQRAccountName.Location = new System.Drawing.Point(215, 60);
+            this.lblQRAccountName.Name = "lblQRAccountName";
+            this.lblQRAccountName.Size = new System.Drawing.Size(240, 20);
+            this.lblQRAccountName.Text = "Chủ TK: --";
+            // 
+            // lblQRAmount
+            // 
+            this.lblQRAmount.Font = new System.Drawing.Font("Segoe UI", 10.5F, System.Drawing.FontStyle.Bold);
+            this.lblQRAmount.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(5)))), ((int)(((byte)(150)))), ((int)(((byte)(105)))));
+            this.lblQRAmount.Location = new System.Drawing.Point(215, 90);
+            this.lblQRAmount.Name = "lblQRAmount";
+            this.lblQRAmount.Size = new System.Drawing.Size(240, 25);
+            this.lblQRAmount.Text = "Số tiền: 0 đ";
+            // 
+            // lblQRContent
+            // 
+            this.lblQRContent.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Italic);
+            this.lblQRContent.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(71)))), ((int)(((byte)(85)))), ((int)(((byte)(105)))));
+            this.lblQRContent.Location = new System.Drawing.Point(215, 120);
+            this.lblQRContent.Name = "lblQRContent";
+            this.lblQRContent.Size = new System.Drawing.Size(240, 20);
+            this.lblQRContent.Text = "Nội dung CK: --";
+            // 
+            // lblQRStatus
+            // 
+            this.lblQRStatus.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+            this.lblQRStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(234)))), ((int)(((byte)(179)))), ((int)(((byte)(8)))));
+            this.lblQRStatus.Location = new System.Drawing.Point(215, 150);
+            this.lblQRStatus.Name = "lblQRStatus";
+            this.lblQRStatus.Size = new System.Drawing.Size(240, 22);
+            this.lblQRStatus.Text = "⏳ Đang chờ thanh toán...";
+            // 
+            // btnXacNhanCKThuCong
+            // 
+            this.btnXacNhanCKThuCong.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(116)))), ((int)(((byte)(139)))));
+            this.btnXacNhanCKThuCong.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnXacNhanCKThuCong.FlatAppearance.BorderSize = 0;
+            this.btnXacNhanCKThuCong.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnXacNhanCKThuCong.Font = new System.Drawing.Font("Segoe UI", 8.5F, System.Drawing.FontStyle.Bold);
+            this.btnXacNhanCKThuCong.ForeColor = System.Drawing.Color.White;
+            this.btnXacNhanCKThuCong.Location = new System.Drawing.Point(215, 185);
+            this.btnXacNhanCKThuCong.Name = "btnXacNhanCKThuCong";
+            this.btnXacNhanCKThuCong.Size = new System.Drawing.Size(240, 38);
+            this.btnXacNhanCKThuCong.TabIndex = 7;
+            this.btnXacNhanCKThuCong.Text = "✅ Xác nhận đã CK (thủ công)";
+            this.btnXacNhanCKThuCong.UseVisualStyleBackColor = false;
+            // 
             // pnlButtons
             // 
             this.pnlButtons.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(247)))), ((int)(((byte)(250)))));
             this.pnlButtons.Controls.Add(this.btnHuyThanhToan);
             this.pnlButtons.Controls.Add(this.btnXacNhanThanhToan);
             this.pnlButtons.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnlButtons.Location = new System.Drawing.Point(0, 440);
+            this.pnlButtons.Location = new System.Drawing.Point(0, 650);
             this.pnlButtons.Name = "pnlButtons";
-            this.pnlButtons.Size = new System.Drawing.Size(482, 65);
+            this.pnlButtons.Size = new System.Drawing.Size(520, 65);
             this.pnlButtons.TabIndex = 2;
             // 
             // btnXacNhanThanhToan
@@ -319,7 +414,7 @@ namespace QLCF.Forms
             this.btnXacNhanThanhToan.ForeColor = System.Drawing.Color.White;
             this.btnXacNhanThanhToan.Location = new System.Drawing.Point(25, 12);
             this.btnXacNhanThanhToan.Name = "btnXacNhanThanhToan";
-            this.btnXacNhanThanhToan.Size = new System.Drawing.Size(270, 40);
+            this.btnXacNhanThanhToan.Size = new System.Drawing.Size(295, 40);
             this.btnXacNhanThanhToan.TabIndex = 0;
             this.btnXacNhanThanhToan.Text = "🧾 Xuất bill & Thanh toán";
             this.btnXacNhanThanhToan.UseVisualStyleBackColor = false;
@@ -332,9 +427,9 @@ namespace QLCF.Forms
             this.btnHuyThanhToan.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnHuyThanhToan.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnHuyThanhToan.ForeColor = System.Drawing.Color.White;
-            this.btnHuyThanhToan.Location = new System.Drawing.Point(320, 12);
+            this.btnHuyThanhToan.Location = new System.Drawing.Point(345, 12);
             this.btnHuyThanhToan.Name = "btnHuyThanhToan";
-            this.btnHuyThanhToan.Size = new System.Drawing.Size(130, 40);
+            this.btnHuyThanhToan.Size = new System.Drawing.Size(145, 40);
             this.btnHuyThanhToan.TabIndex = 1;
             this.btnHuyThanhToan.Text = "❌ Hủy";
             this.btnHuyThanhToan.UseVisualStyleBackColor = false;
@@ -343,7 +438,7 @@ namespace QLCF.Forms
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(482, 505);
+            this.ClientSize = new System.Drawing.Size(520, 715);
             this.Controls.Add(this.pnlMain);
             this.Controls.Add(this.pnlButtons);
             this.Controls.Add(this.pnlHeader);
@@ -358,6 +453,8 @@ namespace QLCF.Forms
             this.pnlMain.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudGiamGia)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudTienKhachDua)).EndInit();
+            this.pnlVietQR.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.picQRCode)).EndInit();
             this.pnlButtons.ResumeLayout(false);
             this.ResumeLayout(false);
 
@@ -385,6 +482,15 @@ namespace QLCF.Forms
         private System.Windows.Forms.NumericUpDown nudTienKhachDua;
         private System.Windows.Forms.Label lblTienThuaLabel;
         private System.Windows.Forms.Label lblTienThuaVal;
+        private System.Windows.Forms.Panel pnlVietQR;
+        private System.Windows.Forms.PictureBox picQRCode;
+        private System.Windows.Forms.Label lblQRBankName;
+        private System.Windows.Forms.Label lblQRAccountNo;
+        private System.Windows.Forms.Label lblQRAccountName;
+        private System.Windows.Forms.Label lblQRAmount;
+        private System.Windows.Forms.Label lblQRContent;
+        private System.Windows.Forms.Label lblQRStatus;
+        private System.Windows.Forms.Button btnXacNhanCKThuCong;
         private System.Windows.Forms.Panel pnlButtons;
         private System.Windows.Forms.Button btnXacNhanThanhToan;
         private System.Windows.Forms.Button btnHuyThanhToan;

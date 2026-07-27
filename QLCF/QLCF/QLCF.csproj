@@ -63,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\Db.cs" />
+    <Compile Include="Data\VietQRConfig.cs" />
     <Compile Include="FrmDangNhap.cs">
       <SubType>Form</SubType>
     </Compile>
