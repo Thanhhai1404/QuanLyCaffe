@@ -111,10 +111,14 @@ namespace QLCF.Forms
                 }
             }
 
+            // Bỏ Padding của pnlNoiDung để màn hình con tràn 100% diện tích chiều rộng & chiều cao
+            pnlNoiDung.Padding = new Padding(0);
+
             if (control is Form frm)
             {
                 frm.TopLevel = false;
                 frm.FormBorderStyle = FormBorderStyle.None;
+                frm.WindowState = FormWindowState.Normal;
                 frm.Dock = DockStyle.Fill;
                 frm.FormClosed += OnEmbeddedFormClosed;
                 pnlNoiDung.Controls.Add(frm);

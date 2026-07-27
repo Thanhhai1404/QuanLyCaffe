@@ -200,12 +200,12 @@ namespace QLCF.Forms
         {
             Button btn = new Button
             {
-                Width = 145,
-                Height = 115,
-                Margin = new Padding(8),
+                Width = 112,
+                Height = 84,
+                Margin = new Padding(4),
                 Cursor = Cursors.Hand,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold, GraphicsUnit.Point),
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point),
                 Tag = ban
             };
 
@@ -257,7 +257,7 @@ namespace QLCF.Forms
                     btn.FlatAppearance.BorderColor = UITheme.PrimaryAccent;
                 }
 
-                btn.Text = $"{ban.TenBan}\n({ban.TenKhuVuc})\n{ban.TrangThai}\n{tamTinhText}";
+                btn.Text = $"{ban.TenBan}\n{ban.TrangThai}\n{tamTinhText}";
             }
 
             btn.Click += Ban_Click;
@@ -286,12 +286,20 @@ namespace QLCF.Forms
                     if (currentBan != null && ban.MaBan == currentBan.MaBan)
                     {
                         btn.FlatAppearance.BorderSize = 3;
-                        btn.FlatAppearance.BorderColor = Color.Blue;
+                        btn.FlatAppearance.BorderColor = UITheme.PrimaryAccent;
                     }
                     else
                     {
                         btn.FlatAppearance.BorderSize = 1;
-                        btn.FlatAppearance.BorderColor = Color.FromArgb(189, 195, 199);
+                        string trangThaiStr = ban.TrangThai != null ? ban.TrangThai.Trim() : "";
+                        if (trangThaiStr.Equals("Trống", StringComparison.OrdinalIgnoreCase))
+                            btn.FlatAppearance.BorderColor = UITheme.TableTrongBorder;
+                        else if (trangThaiStr.Equals("Có khách", StringComparison.OrdinalIgnoreCase))
+                            btn.FlatAppearance.BorderColor = UITheme.TableCoKhachBorder;
+                        else if (trangThaiStr.Equals("Đặt trước", StringComparison.OrdinalIgnoreCase))
+                            btn.FlatAppearance.BorderColor = UITheme.TableDatTruocBorder;
+                        else
+                            btn.FlatAppearance.BorderColor = UITheme.BorderColor;
                     }
                 }
             }
@@ -353,13 +361,13 @@ namespace QLCF.Forms
                 Button btnAll = new Button
                 {
                     Text = "Tất cả",
-                    Height = 40,
+                    Height = 36,
                     AutoSize = true,
                     Margin = new Padding(3),
                     Cursor = Cursors.Hand,
                     FlatStyle = FlatStyle.Flat,
                     Font = new Font("Segoe UI", 9.5F, FontStyle.Bold, GraphicsUnit.Point),
-                    BackColor = Color.FromArgb(52, 152, 219),
+                    BackColor = Color.FromArgb(245, 158, 11),
                     ForeColor = Color.White,
                     Tag = null
                 };
@@ -386,14 +394,14 @@ namespace QLCF.Forms
                                 Button btnDM = new Button
                                 {
                                     Text = dm.TenDanhMuc,
-                                    Height = 40,
+                                    Height = 36,
                                     AutoSize = true,
                                     Margin = new Padding(3),
                                     Cursor = Cursors.Hand,
                                     FlatStyle = FlatStyle.Flat,
                                     Font = new Font("Segoe UI", 9.5F, FontStyle.Regular, GraphicsUnit.Point),
-                                    BackColor = Color.FromArgb(236, 240, 241),
-                                    ForeColor = Color.Black,
+                                    BackColor = Color.FromArgb(226, 232, 240),
+                                    ForeColor = Color.FromArgb(51, 65, 85),
                                     Tag = dm
                                 };
                                 btnDM.FlatAppearance.BorderSize = 0;
@@ -421,13 +429,13 @@ namespace QLCF.Forms
                 {
                     if (ctrl is Button b)
                     {
-                        b.BackColor = Color.FromArgb(236, 240, 241);
-                        b.ForeColor = Color.Black;
+                        b.BackColor = Color.FromArgb(226, 232, 240);
+                        b.ForeColor = Color.FromArgb(51, 65, 85);
                         b.Font = new Font("Segoe UI", 9.5F, FontStyle.Regular, GraphicsUnit.Point);
                     }
                 }
 
-                btn.BackColor = Color.FromArgb(52, 152, 219);
+                btn.BackColor = Color.FromArgb(245, 158, 11);
                 btn.ForeColor = Color.White;
                 btn.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold, GraphicsUnit.Point);
 
@@ -501,20 +509,20 @@ namespace QLCF.Forms
         {
             Button btn = new Button
             {
-                Width = 125,
-                Height = 90,
+                Width = 130,
+                Height = 92,
                 Margin = new Padding(6),
                 Cursor = Cursors.Hand,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point),
-                BackColor = Color.FromArgb(250, 250, 250),
-                ForeColor = Color.FromArgb(44, 62, 80),
+                BackColor = Color.FromArgb(248, 250, 252),
+                ForeColor = Color.FromArgb(15, 23, 42),
                 Text = $"{mon.TenMon}\n\n{DinhDangTien(mon.DonGia)}",
                 Tag = mon
             };
 
             btn.FlatAppearance.BorderSize = 1;
-            btn.FlatAppearance.BorderColor = Color.FromArgb(189, 195, 199);
+            btn.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
 
             // Kiểm tra và hiển thị ảnh nếu đường dẫn hợp lệ
             if (!string.IsNullOrWhiteSpace(mon.HinhAnh) && File.Exists(mon.HinhAnh))
@@ -544,16 +552,16 @@ namespace QLCF.Forms
                 if (currentMonAnButton != null)
                 {
                     currentMonAnButton.FlatAppearance.BorderSize = 1;
-                    currentMonAnButton.FlatAppearance.BorderColor = Color.FromArgb(189, 195, 199);
-                    currentMonAnButton.BackColor = Color.FromArgb(250, 250, 250);
+                    currentMonAnButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+                    currentMonAnButton.BackColor = Color.FromArgb(248, 250, 252);
                 }
 
                 currentMonAn = mon;
                 currentMonAnButton = btn;
 
-                btn.FlatAppearance.BorderSize = 3;
-                btn.FlatAppearance.BorderColor = Color.FromArgb(41, 128, 185);
-                btn.BackColor = Color.FromArgb(235, 245, 251);
+                btn.FlatAppearance.BorderSize = 2;
+                btn.FlatAppearance.BorderColor = Color.FromArgb(37, 99, 235);
+                btn.BackColor = Color.FromArgb(239, 246, 255);
 
                 lblMonDangChon.Text = "Món đang chọn: " + mon.TenMon;
             }
@@ -564,8 +572,8 @@ namespace QLCF.Forms
             if (currentMonAnButton != null)
             {
                 currentMonAnButton.FlatAppearance.BorderSize = 1;
-                currentMonAnButton.FlatAppearance.BorderColor = Color.FromArgb(189, 195, 199);
-                currentMonAnButton.BackColor = Color.FromArgb(250, 250, 250);
+                currentMonAnButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+                currentMonAnButton.BackColor = Color.FromArgb(248, 250, 252);
             }
 
             currentMonAn = null;
