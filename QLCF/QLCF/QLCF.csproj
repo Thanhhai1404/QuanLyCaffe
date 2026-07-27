@@ -87,6 +87,12 @@
     <Compile Include="Forms\FrmThanhToan.Designer.cs">
       <DependentUpon>FrmThanhToan.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\FrmXemTruocBill.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmXemTruocBill.Designer.cs">
+      <DependentUpon>FrmXemTruocBill.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\FrmChuyenBan.cs">
       <SubType>Form</SubType>
     </Compile>

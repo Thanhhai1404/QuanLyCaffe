@@ -538,7 +538,7 @@ namespace QLCF.Forms
             this.btnThanhToan.Name = "btnThanhToan";
             this.btnThanhToan.Size = new System.Drawing.Size(420, 44);
             this.btnThanhToan.TabIndex = 12;
-            this.btnThanhToan.Text = "💳 THANH TOÁN HÓA ĐƠN";
+            this.btnThanhToan.Text = "🧾 XUẤT BILL & THANH TOÁN";
             this.btnThanhToan.UseVisualStyleBackColor = false;
             // 
             // pnlThongTinBanHeader

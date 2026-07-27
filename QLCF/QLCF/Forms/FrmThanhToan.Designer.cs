@@ -321,7 +321,7 @@ namespace QLCF.Forms
             this.btnXacNhanThanhToan.Name = "btnXacNhanThanhToan";
             this.btnXacNhanThanhToan.Size = new System.Drawing.Size(270, 40);
             this.btnXacNhanThanhToan.TabIndex = 0;
-            this.btnXacNhanThanhToan.Text = "✔ Xác nhận thanh toán";
+            this.btnXacNhanThanhToan.Text = "🧾 Xuất bill & Thanh toán";
             this.btnXacNhanThanhToan.UseVisualStyleBackColor = false;
             // 
             // btnHuyThanhToan

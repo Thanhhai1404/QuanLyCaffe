@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
@@ -118,75 +119,88 @@ namespace QLCF.Forms
             decimal tongCanThanhToan = Math.Max(0, _tongTienGoc - soTienGiam);
 
             string phuongThuc = cboPhuongThucThanhToan.SelectedItem != null ? cboPhuongThucThanhToan.SelectedItem.ToString() : "Tiền mặt";
+            decimal tienKhachDua = phuongThuc == "Tiền mặt" ? nudTienKhachDua.Value : tongCanThanhToan;
+            decimal tienTraLai = phuongThuc == "Tiền mặt" ? Math.Max(0, tienKhachDua - tongCanThanhToan) : 0m;
 
             // Kiểm tra số tiền khách đưa nếu thanh toán tiền mặt
-            if (phuongThuc == "Tiền mặt")
+            if (phuongThuc == "Tiền mặt" && tienKhachDua < tongCanThanhToan)
             {
-                if (nudTienKhachDua.Value < tongCanThanhToan)
-                {
-                    MessageBox.Show(
-                        "Số tiền khách đưa chưa đủ để thanh toán.",
-                        "Số tiền không đủ",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning
-                    );
-                    return;
-                }
-            }
-
-            // Hộp thoại xác nhận
-            DialogResult confirm = MessageBox.Show(
-                $"Xác nhận thanh toán hóa đơn #{_maHD} với tổng tiền {DinhDangTien(tongCanThanhToan)}?",
-                "Xác nhận thanh toán",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
-            );
-
-            if (confirm != DialogResult.Yes)
-            {
+                MessageBox.Show(
+                    "Số tiền khách đưa chưa đủ để thanh toán.",
+                    "Số tiền không đủ",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
                 return;
             }
 
+            // Lấy danh sách chi tiết món ăn từ CSDL
+            List<ChiTietHoaDonModel> chiTietList = LayDanhSachChiTietHoaDon(_maHD);
+
+            // Mở Form Xem trước Hóa đơn (Bill Preview) thay thế hoàn toàn MessageBox xác nhận
+            using (FrmXemTruocBill frmBill = new FrmXemTruocBill(
+                _maHD,
+                _maBan,
+                _tenBan,
+                _tongTienGoc,
+                giamGia,
+                soTienGiam,
+                tongCanThanhToan,
+                phuongThuc,
+                tienKhachDua,
+                tienTraLai,
+                UserSession.HoTen,
+                chiTietList))
+            {
+                if (frmBill.ShowDialog(this) == DialogResult.OK)
+                {
+                    this.DialogResult = DialogResult.OK;
+                    this.Close();
+                }
+            }
+        }
+
+        private List<ChiTietHoaDonModel> LayDanhSachChiTietHoaDon(int maHD)
+        {
+            List<ChiTietHoaDonModel> list = new List<ChiTietHoaDonModel>();
             try
             {
                 using (SqlConnection conn = Db.CreateConnection())
                 {
-                    using (SqlCommand cmd = new SqlCommand("sp_ThanhToan", conn))
+                    string sql = @"
+                        SELECT ct.MaCTHD, ct.MaHD, ct.MaMon, m.TenMon, ct.SoLuong, ct.DonGia, ct.ThanhTien, ct.GhiChu
+                        FROM dbo.ChiTietHoaDon ct
+                        JOIN dbo.MonAn m ON ct.MaMon = m.MaMon
+                        WHERE ct.MaHD = @MaHD
+                        ORDER BY ct.MaCTHD";
+
+                    using (SqlCommand cmd = new SqlCommand(sql, conn))
                     {
-                        cmd.CommandType = CommandType.StoredProcedure;
-
-                        cmd.Parameters.Add("@MaHD", SqlDbType.Int).Value = _maHD;
-                        cmd.Parameters.Add("@MaNVThanhToan", SqlDbType.Int).Value = UserSession.MaNV;
-                        cmd.Parameters.Add("@GiamGia", SqlDbType.Int).Value = giamGia;
-                        cmd.Parameters.Add("@PhuongThucThanhToan", SqlDbType.NVarChar, 20).Value = phuongThuc;
-
-                        if (phuongThuc == "Tiền mặt")
-                        {
-                            cmd.Parameters.Add("@TienKhachDua", SqlDbType.Decimal).Value = nudTienKhachDua.Value;
-                        }
-                        else
-                        {
-                            cmd.Parameters.Add("@TienKhachDua", SqlDbType.Decimal).Value = DBNull.Value;
-                        }
-
+                        cmd.Parameters.Add("@MaHD", SqlDbType.Int).Value = maHD;
                         conn.Open();
-                        cmd.ExecuteNonQuery();
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                list.Add(new ChiTietHoaDonModel
+                                {
+                                    MaCTHD = Convert.ToInt32(reader["MaCTHD"]),
+                                    MaHD = Convert.ToInt32(reader["MaHD"]),
+                                    MaMon = Convert.ToInt32(reader["MaMon"]),
+                                    TenMon = reader["TenMon"].ToString(),
+                                    SoLuong = Convert.ToInt32(reader["SoLuong"]),
+                                    DonGia = Convert.ToDecimal(reader["DonGia"]),
+                                    ThanhTien = Convert.ToDecimal(reader["ThanhTien"]),
+                                    GhiChu = reader["GhiChu"] != DBNull.Value ? reader["GhiChu"].ToString() : ""
+                                });
+                            }
+                        }
                     }
                 }
-
-                MessageBox.Show("Thanh toán thành công.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                this.DialogResult = DialogResult.OK;
-                this.Close();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    "Thanh toán thất bại.\n\nChi tiết lỗi: " + ex.Message,
-                    "Lỗi cơ sở dữ liệu",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
-                );
-            }
+            catch { }
+            return list;
         }
 
         private void btnHuyThanhToan_Click(object sender, EventArgs e)
