@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 using QLCF.Data;
 using QLCF.Helpers;
@@ -11,6 +12,9 @@ namespace QLCF.Forms
 {
     public partial class FrmQuanLyMonAn : Form
     {
+        private string selectedSourceImagePath = string.Empty;
+        private string currentImageFileName = string.Empty;
+
         public FrmQuanLyMonAn(int defaultTab = 0)
         {
             InitializeComponent();
@@ -37,6 +41,7 @@ namespace QLCF.Forms
             this.btnSuaMon.Click += btnSuaMon_Click;
             this.btnLuuMon.Click += btnLuuMon_Click;
             this.btnLamMoiMon.Click += btnLamMoiMon_Click;
+            this.btnChonHinhAnh.Click += btnChonHinhAnh_Click;
             this.btnTimKiemMonQuanLy.Click += btnTimKiemMonQuanLy_Click;
             this.txtTimKiemMon.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) btnTimKiemMonQuanLy_Click(s, e); };
         }
@@ -47,6 +52,7 @@ namespace QLCF.Forms
 
             if (btnLuuDanhMuc != null) UITheme.ApplyStyleToButton(btnLuuDanhMuc, isPrimary: true);
             if (btnLuuMon != null) UITheme.ApplyStyleToButton(btnLuuMon, isPrimary: true);
+            if (btnChonHinhAnh != null) UITheme.ApplyStyleToButton(btnChonHinhAnh);
             if (btnThemDanhMuc != null) UITheme.ApplyStyleToButton(btnThemDanhMuc);
             if (btnSuaDanhMuc != null) UITheme.ApplyStyleToButton(btnSuaDanhMuc);
             if (btnLamMoiDanhMuc != null) UITheme.ApplyStyleToButton(btnLamMoiDanhMuc);
@@ -335,6 +341,7 @@ namespace QLCF.Forms
                         DataTable dtDisplay = dtRaw.Clone();
                         dtDisplay.Columns.Add("DonGiaFormatted", typeof(string));
                         dtDisplay.Columns.Add("TrangThaiText", typeof(string));
+                        dtDisplay.Columns.Add("HinhAnhImage", typeof(Image));
 
                         foreach (DataRow r in dtRaw.Rows)
                         {
@@ -353,6 +360,9 @@ namespace QLCF.Forms
                             int trangThai = Convert.ToInt32(r["TrangThai"]);
                             nr["TrangThaiText"] = trangThai == 1 ? "Đang kinh doanh" : "Ngừng bán";
 
+                            string hinhAnhFile = r["HinhAnh"] != DBNull.Value ? r["HinhAnh"].ToString() : "";
+                            nr["HinhAnhImage"] = LoadThumbnailImage(hinhAnhFile);
+
                             dtDisplay.Rows.Add(nr);
                         }
 
@@ -369,6 +379,82 @@ namespace QLCF.Forms
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
+            }
+        }
+
+        private Image LoadThumbnailImage(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName)) return null;
+
+            string fullPath = fileName;
+            if (!File.Exists(fullPath))
+            {
+                fullPath = Path.Combine(Application.StartupPath, "Images", fileName);
+            }
+
+            if (File.Exists(fullPath))
+            {
+                try
+                {
+                    using (var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    {
+                        using (var original = Image.FromStream(stream))
+                        {
+                            return new Bitmap(original, new Size(44, 44));
+                        }
+                    }
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        private void HienThiAnhPreview(string imagePathOrFileName)
+        {
+            if (picHinhAnhMon.Image != null)
+            {
+                picHinhAnhMon.Image.Dispose();
+                picHinhAnhMon.Image = null;
+            }
+
+            if (string.IsNullOrWhiteSpace(imagePathOrFileName)) return;
+
+            string fullPath = imagePathOrFileName;
+            if (!File.Exists(fullPath))
+            {
+                fullPath = Path.Combine(Application.StartupPath, "Images", imagePathOrFileName);
+            }
+
+            if (File.Exists(fullPath))
+            {
+                try
+                {
+                    using (var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    {
+                        picHinhAnhMon.Image = Image.FromStream(stream);
+                    }
+                }
+                catch
+                {
+                    picHinhAnhMon.Image = null;
+                }
+            }
+        }
+
+        private void btnChonHinhAnh_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog ofd = new OpenFileDialog())
+            {
+                ofd.Filter = "Tệp hình ảnh (*.jpg; *.jpeg; *.png; *.bmp; *.webp)|*.jpg;*.jpeg;*.png;*.bmp;*.webp";
+                ofd.Title = "Chọn hình ảnh thực tế cho món ăn";
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+                    selectedSourceImagePath = ofd.FileName;
+                    HienThiAnhPreview(selectedSourceImagePath);
+                }
             }
         }
 
@@ -394,7 +480,18 @@ namespace QLCF.Forms
                     nudDonGia.Value = donGiaVal;
                 }
 
-                txtHinhAnh.Text = row.Cells["colHinhAnh"].Value != null ? row.Cells["colHinhAnh"].Value.ToString() : "";
+                DataRowView drv = row.DataBoundItem as DataRowView;
+                if (drv != null)
+                {
+                    currentImageFileName = drv["HinhAnh"] != DBNull.Value ? drv["HinhAnh"].ToString() : "";
+                }
+                else
+                {
+                    currentImageFileName = "";
+                }
+
+                selectedSourceImagePath = string.Empty;
+                HienThiAnhPreview(currentImageFileName);
 
                 object trangThaiVal = row.Cells["colTrangThaiMonText"].Value;
                 chkTrangThaiMon.Checked = trangThaiVal != null && trangThaiVal.ToString() == "Đang kinh doanh";
@@ -416,7 +513,13 @@ namespace QLCF.Forms
                 cboDanhMucMon.SelectedIndex = 0;
             }
             nudDonGia.Value = 0;
-            txtHinhAnh.Text = string.Empty;
+            currentImageFileName = string.Empty;
+            selectedSourceImagePath = string.Empty;
+            if (picHinhAnhMon.Image != null)
+            {
+                picHinhAnhMon.Image.Dispose();
+                picHinhAnhMon.Image = null;
+            }
             chkTrangThaiMon.Checked = true;
             txtTimKiemMon.Text = string.Empty;
             txtTenMon.Focus();
@@ -481,7 +584,34 @@ namespace QLCF.Forms
                 return;
             }
 
-            string hinhAnh = txtHinhAnh.Text.Trim();
+            string hinhAnhToSave = currentImageFileName;
+            if (!string.IsNullOrEmpty(selectedSourceImagePath) && File.Exists(selectedSourceImagePath))
+            {
+                try
+                {
+                    string imagesDir = Path.Combine(Application.StartupPath, "Images");
+                    if (!Directory.Exists(imagesDir))
+                    {
+                        Directory.CreateDirectory(imagesDir);
+                    }
+
+                    string ext = Path.GetExtension(selectedSourceImagePath);
+                    string newFileName = $"monan_{DateTime.Now:yyyyMMddHHmmssfff}{ext}";
+                    string destPath = Path.Combine(imagesDir, newFileName);
+                    File.Copy(selectedSourceImagePath, destPath, true);
+                    hinhAnhToSave = newFileName;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        "Không thể lưu tệp hình ảnh vào thư mục Images.\nChi tiết: " + ex.Message,
+                        "Lỗi lưu hình ảnh",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning
+                    );
+                }
+            }
+
             int trangThai = chkTrangThaiMon.Checked ? 1 : 0;
             bool isUpdate = int.TryParse(txtMaMon.Text, out int maMon);
 
@@ -501,7 +631,7 @@ namespace QLCF.Forms
                         cmdSave.Parameters.Add("@TenMon", SqlDbType.NVarChar, 100).Value = tenMon;
                         cmdSave.Parameters.Add("@MaDM", SqlDbType.Int).Value = maDM;
                         cmdSave.Parameters.Add("@DonGia", SqlDbType.Decimal).Value = donGia;
-                        cmdSave.Parameters.Add("@HinhAnh", SqlDbType.NVarChar, 255).Value = string.IsNullOrEmpty(hinhAnh) ? (object)DBNull.Value : hinhAnh;
+                        cmdSave.Parameters.Add("@HinhAnh", SqlDbType.NVarChar, 255).Value = string.IsNullOrEmpty(hinhAnhToSave) ? (object)DBNull.Value : hinhAnhToSave;
                         cmdSave.Parameters.Add("@TrangThai", SqlDbType.Bit).Value = trangThai;
 
                         if (isUpdate)
@@ -521,6 +651,7 @@ namespace QLCF.Forms
                     MessageBoxIcon.Information
                 );
 
+                selectedSourceImagePath = string.Empty;
                 LoadMonAn();
             }
             catch (Exception ex)

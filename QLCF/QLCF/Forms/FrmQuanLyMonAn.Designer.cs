@@ -113,13 +113,13 @@ namespace QLCF.Forms
             // lblTieuDe
             // 
             this.lblTieuDe.AutoSize = true;
-            this.lblTieuDe.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTieuDe.Font = new System.Drawing.Font("Segoe UI", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTieuDe.ForeColor = System.Drawing.Color.White;
             this.lblTieuDe.Location = new System.Drawing.Point(20, 15);
             this.lblTieuDe.Name = "lblTieuDe";
-            this.lblTieuDe.Size = new System.Drawing.Size(434, 32);
+            this.lblTieuDe.Size = new System.Drawing.Size(380, 30);
             this.lblTieuDe.TabIndex = 0;
-            this.lblTieuDe.Text = "🍽️ QUẢN LÝ MÓN ĂN VÀ DANH MỤC";
+            this.lblTieuDe.Text = "QUẢN LÝ MÓN ĂN & DANH MỤC";
             // 
             // tabMain
             // 
@@ -127,24 +127,25 @@ namespace QLCF.Forms
             this.tabMain.Controls.Add(this.tabMonAn);
             this.tabMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabMain.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tabMain.ItemSize = new System.Drawing.Size(150, 35);
+            this.tabMain.ItemSize = new System.Drawing.Size(180, 42);
             this.tabMain.Location = new System.Drawing.Point(0, 60);
             this.tabMain.Name = "tabMain";
+            this.tabMain.Padding = new System.Drawing.Point(24, 10);
             this.tabMain.SelectedIndex = 0;
             this.tabMain.Size = new System.Drawing.Size(1100, 590);
-            this.tabMain.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
+            this.tabMain.SizeMode = System.Windows.Forms.TabSizeMode.Normal;
             this.tabMain.TabIndex = 1;
             // 
             // tabDanhMuc
             // 
             this.tabDanhMuc.Controls.Add(this.pnlDanhMucContent);
             this.tabDanhMuc.Controls.Add(this.pnlDanhMucInput);
-            this.tabDanhMuc.Location = new System.Drawing.Point(4, 39);
+            this.tabDanhMuc.Location = new System.Drawing.Point(4, 46);
             this.tabDanhMuc.Name = "tabDanhMuc";
             this.tabDanhMuc.Padding = new System.Windows.Forms.Padding(10);
-            this.tabDanhMuc.Size = new System.Drawing.Size(1092, 547);
+            this.tabDanhMuc.Size = new System.Drawing.Size(1092, 540);
             this.tabDanhMuc.TabIndex = 0;
-            this.tabDanhMuc.Text = "📂 Danh mục";
+            this.tabDanhMuc.Text = " 📂   Danh Mục Món  ";
             this.tabDanhMuc.UseVisualStyleBackColor = true;
             // 
             // pnlDanhMucContent
@@ -360,7 +361,7 @@ namespace QLCF.Forms
             this.tabMonAn.Padding = new System.Windows.Forms.Padding(10);
             this.tabMonAn.Size = new System.Drawing.Size(1092, 547);
             this.tabMonAn.TabIndex = 1;
-            this.tabMonAn.Text = "☕ Món ăn";
+            this.tabMonAn.Text = " ☕   Danh Sách Món Ăn  ";
             this.tabMonAn.UseVisualStyleBackColor = true;
             // 
             // pnlMonAnContent
@@ -403,7 +404,7 @@ namespace QLCF.Forms
             this.dgvMonAn.ReadOnly = true;
             this.dgvMonAn.RowHeadersVisible = false;
             this.dgvMonAn.RowHeadersWidth = 51;
-            this.dgvMonAn.RowTemplate.Height = 30;
+            this.dgvMonAn.RowTemplate.Height = 48;
             this.dgvMonAn.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvMonAn.Size = new System.Drawing.Size(682, 472);
             this.dgvMonAn.TabIndex = 0;
@@ -444,9 +445,10 @@ namespace QLCF.Forms
             // 
             // colHinhAnh
             // 
-            this.colHinhAnh.DataPropertyName = "HinhAnh";
+            this.colHinhAnh.DataPropertyName = "HinhAnhImage";
             this.colHinhAnh.HeaderText = "Hình ảnh";
             this.colHinhAnh.FillWeight = 50F;
+            this.colHinhAnh.ImageLayout = System.Windows.Forms.DataGridViewImageCellLayout.Zoom;
             this.colHinhAnh.Name = "colHinhAnh";
             this.colHinhAnh.ReadOnly = true;
             // 
@@ -521,8 +523,9 @@ namespace QLCF.Forms
             this.grpChiTietMonAn.Controls.Add(this.btnSuaMon);
             this.grpChiTietMonAn.Controls.Add(this.btnThemMon);
             this.grpChiTietMonAn.Controls.Add(this.chkTrangThaiMon);
-            this.grpChiTietMonAn.Controls.Add(this.txtHinhAnh);
-            this.grpChiTietMonAn.Controls.Add(this.lblHinhAnh);
+            this.grpChiTietMonAn.Controls.Add(this.btnChonHinhAnh);
+            this.grpChiTietMonAn.Controls.Add(this.picHinhAnhMon);
+            this.grpChiTietMonAn.Controls.Add(this.lblXemTruocHinhAnh);
             this.grpChiTietMonAn.Controls.Add(this.nudDonGia);
             this.grpChiTietMonAn.Controls.Add(this.lblDonGia);
             this.grpChiTietMonAn.Controls.Add(this.cboDanhMucMon);
@@ -604,30 +607,48 @@ namespace QLCF.Forms
             this.chkTrangThaiMon.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkTrangThaiMon.Cursor = System.Windows.Forms.Cursors.Hand;
             this.chkTrangThaiMon.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkTrangThaiMon.Location = new System.Drawing.Point(20, 370);
+            this.chkTrangThaiMon.Location = new System.Drawing.Point(135, 365);
             this.chkTrangThaiMon.Name = "chkTrangThaiMon";
             this.chkTrangThaiMon.Size = new System.Drawing.Size(155, 25);
             this.chkTrangThaiMon.TabIndex = 10;
             this.chkTrangThaiMon.Text = "Đang kinh doanh";
             this.chkTrangThaiMon.UseVisualStyleBackColor = true;
             // 
-            // txtHinhAnh
+            // btnChonHinhAnh
             // 
-            this.txtHinhAnh.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtHinhAnh.Location = new System.Drawing.Point(20, 325);
-            this.txtHinhAnh.Name = "txtHinhAnh";
-            this.txtHinhAnh.Size = new System.Drawing.Size(340, 30);
-            this.txtHinhAnh.TabIndex = 9;
+            this.btnChonHinhAnh.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(194)))), ((int)(((byte)(98)))), ((int)(((byte)(14)))));
+            this.btnChonHinhAnh.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnChonHinhAnh.FlatAppearance.BorderSize = 0;
+            this.btnChonHinhAnh.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnChonHinhAnh.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnChonHinhAnh.ForeColor = System.Drawing.Color.White;
+            this.btnChonHinhAnh.Location = new System.Drawing.Point(135, 320);
+            this.btnChonHinhAnh.Name = "btnChonHinhAnh";
+            this.btnChonHinhAnh.Size = new System.Drawing.Size(150, 35);
+            this.btnChonHinhAnh.TabIndex = 9;
+            this.btnChonHinhAnh.Text = "📷 Chọn hình ảnh";
+            this.btnChonHinhAnh.UseVisualStyleBackColor = false;
             // 
-            // lblHinhAnh
+            // picHinhAnhMon
             // 
-            this.lblHinhAnh.AutoSize = true;
-            this.lblHinhAnh.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblHinhAnh.Location = new System.Drawing.Point(20, 300);
-            this.lblHinhAnh.Name = "lblHinhAnh";
-            this.lblHinhAnh.Size = new System.Drawing.Size(133, 21);
-            this.lblHinhAnh.TabIndex = 8;
-            this.lblHinhAnh.Text = "Tên tệp hình ảnh:";
+            this.picHinhAnhMon.BackColor = System.Drawing.Color.White;
+            this.picHinhAnhMon.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.picHinhAnhMon.Location = new System.Drawing.Point(20, 320);
+            this.picHinhAnhMon.Name = "picHinhAnhMon";
+            this.picHinhAnhMon.Size = new System.Drawing.Size(100, 80);
+            this.picHinhAnhMon.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.picHinhAnhMon.TabIndex = 8;
+            this.picHinhAnhMon.TabStop = false;
+            // 
+            // lblXemTruocHinhAnh
+            // 
+            this.lblXemTruocHinhAnh.AutoSize = true;
+            this.lblXemTruocHinhAnh.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblXemTruocHinhAnh.Location = new System.Drawing.Point(20, 296);
+            this.lblXemTruocHinhAnh.Name = "lblXemTruocHinhAnh";
+            this.lblXemTruocHinhAnh.Size = new System.Drawing.Size(147, 21);
+            this.lblXemTruocHinhAnh.TabIndex = 7;
+            this.lblXemTruocHinhAnh.Text = "Hình ảnh món ăn:";
             // 
             // nudDonGia
             // 
@@ -794,7 +815,7 @@ namespace QLCF.Forms
         private System.Windows.Forms.DataGridViewTextBoxColumn colTenMon;
         private System.Windows.Forms.DataGridViewTextBoxColumn colTenDM;
         private System.Windows.Forms.DataGridViewTextBoxColumn colDonGia;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colHinhAnh;
+        private System.Windows.Forms.DataGridViewImageColumn colHinhAnh;
         private System.Windows.Forms.DataGridViewTextBoxColumn colTrangThaiMonText;
         private System.Windows.Forms.Panel pnlMonAnSearch;
         private System.Windows.Forms.Label lblTimKiemMon;
@@ -810,8 +831,9 @@ namespace QLCF.Forms
         private System.Windows.Forms.ComboBox cboDanhMucMon;
         private System.Windows.Forms.Label lblDonGia;
         private System.Windows.Forms.NumericUpDown nudDonGia;
-        private System.Windows.Forms.Label lblHinhAnh;
-        private System.Windows.Forms.TextBox txtHinhAnh;
+        private System.Windows.Forms.Label lblXemTruocHinhAnh;
+        private System.Windows.Forms.PictureBox picHinhAnhMon;
+        private System.Windows.Forms.Button btnChonHinhAnh;
         private System.Windows.Forms.CheckBox chkTrangThaiMon;
         private System.Windows.Forms.Button btnThemMon;
         private System.Windows.Forms.Button btnSuaMon;

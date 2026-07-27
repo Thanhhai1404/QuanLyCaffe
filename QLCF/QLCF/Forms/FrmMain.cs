@@ -43,7 +43,7 @@ namespace QLCF.Forms
             if (btnDangXuat != null) UITheme.ApplyStyleToButton(btnDangXuat, isDanger: true);
 
             // Style menu buttons
-            Button[] menuButtons = new Button[] { btnBanHang, btnMonAn, btnDanhMuc, btnKhuVucBan, btnNhanVien, btnHoaDon, btnThongKe, btnDoiMatKhau };
+            Button[] menuButtons = new Button[] { btnBanHang, btnMonAn, btnKhuVucBan, btnNhanVien, btnHoaDon, btnThongKe, btnDoiMatKhau };
             foreach (Button b in menuButtons)
             {
                 if (b == null) continue;
@@ -55,6 +55,8 @@ namespace QLCF.Forms
                 b.Cursor = Cursors.Hand;
             }
 
+            if (btnDanhMuc != null) btnDanhMuc.Visible = false;
+
             // Set user header info
             lblXinChao.Text = $"Xin chào, {UserSession.HoTen}";
             lblVaiTro.Text = $"Vai trò: {UserSession.ChucVu}";
@@ -64,7 +66,6 @@ namespace QLCF.Forms
             {
                 btnBanHang.Visible = true;
                 btnMonAn.Visible = true;
-                btnDanhMuc.Visible = true;
                 btnKhuVucBan.Visible = true;
                 btnNhanVien.Visible = true;
                 btnHoaDon.Visible = true;
@@ -80,7 +81,6 @@ namespace QLCF.Forms
                 btnDoiMatKhau.Visible = true;
 
                 btnMonAn.Visible = false;
-                btnDanhMuc.Visible = false;
                 btnKhuVucBan.Visible = false;
                 btnNhanVien.Visible = false;
                 btnHoaDon.Visible = false;
@@ -153,7 +153,7 @@ namespace QLCF.Forms
         {
             if (selectedButton == null) return;
 
-            Button[] menuButtons = new Button[] { btnBanHang, btnMonAn, btnDanhMuc, btnKhuVucBan, btnNhanVien, btnHoaDon, btnThongKe, btnDoiMatKhau };
+            Button[] menuButtons = new Button[] { btnBanHang, btnMonAn, btnKhuVucBan, btnNhanVien, btnHoaDon, btnThongKe, btnDoiMatKhau };
             foreach (Button b in menuButtons)
             {
                 if (b == null) continue;
