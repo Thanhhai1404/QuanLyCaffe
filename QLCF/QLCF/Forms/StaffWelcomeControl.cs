@@ -112,12 +112,10 @@ namespace QLCF.Forms
                 checkInTime = DateTime.Now;
                 SetShiftUI(true);
 
-                MessageBox.Show(
-                    $"[{checkInTime.ToString("HH:mm")}] Điểm danh vào ca thành công!\nChúc bạn một ngày làm việc hiệu quả.",
-                    "Vào ca thành công",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
-                );
+                using (var toast = new FrmSuccessToast("Vào ca thành công", $"Điểm danh lúc {checkInTime.ToString("HH:mm")}"))
+                {
+                    toast.ShowDialog();
+                }
             }
             else
             {
@@ -132,18 +130,24 @@ namespace QLCF.Forms
             TimeSpan duration = DateTime.Now - checkInTime;
             string msg = $"Xác nhận KẾT CA LÀM VIỆC?\n- Thời gian vào ca: {checkInTime:HH:mm dd/MM/yyyy}\n- Thời gian kết ca: {DateTime.Now:HH:mm dd/MM/yyyy}\n- Thời lượng ca này: {(int)duration.TotalHours} giờ {duration.Minutes} phút";
 
-            DialogResult confirm = MessageBox.Show(msg, "Xác nhận kết ca", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
-            if (confirm == DialogResult.Yes)
+            using (var confirmDialog = new FrmConfirm("Xác nhận kết ca", msg))
             {
-                if (ShiftService.DirectCheckOut(UserSession.CurrentShiftId))
+                confirmDialog.ShowDialog();
+
+                if (confirmDialog.Result)
                 {
-                    SetShiftUI(false);
-                    MessageBox.Show("Kết ca thành công!", "Kết ca thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else
-                {
-                    MessageBox.Show("Có lỗi xảy ra khi cập nhật ca làm.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    if (ShiftService.DirectCheckOut(UserSession.CurrentShiftId))
+                    {
+                        SetShiftUI(false);
+                        using (var toast = new FrmSuccessToast("Kết ca thành công", "Hệ thống đã ghi nhận."))
+                        {
+                            toast.ShowDialog();
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Có lỗi xảy ra khi cập nhật ca làm.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             }
         }

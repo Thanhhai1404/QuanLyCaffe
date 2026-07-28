@@ -69,9 +69,6 @@ namespace QLCF.Forms
 
         private void FrmXemTruocBill_Load(object sender, EventArgs e)
         {
-            // Tinh chỉnh chiều cao Form (Tối đa 650px hoặc 85% chiều cao làm việc của màn hình)
-            int maxHeight = Math.Min(650, (int)(Screen.PrimaryScreen.WorkingArea.Height * 0.85));
-            this.Height = maxHeight;
             this.StartPosition = FormStartPosition.CenterParent;
 
             if (pnlPaper != null) pnlPaper.Padding = new Padding(14, 14, 14, 40);
@@ -91,6 +88,23 @@ namespace QLCF.Forms
             int totalGridHeight = dgvMonAn.ColumnHeadersHeight + (_chiTietList.Count * rowHeight) + 6;
             dgvMonAn.Height = Math.Max(60, totalGridHeight);
 
+            // Bỏ AutoSize để tự chỉnh chiều cao
+            pnlPaper.AutoSize = false;
+
+            // Trong sự kiện Load, các control Dock = Top chưa được gán tọa độ Bottom chính xác,
+            // nên ta phải tính chiều cao bằng cách cộng dồn Height của các control.
+            int totalHeight = 0;
+            foreach (Control c in pnlPaper.Controls)
+            {
+                if (c.Visible)
+                {
+                    totalHeight += c.Height;
+                }
+            }
+            
+            // Chiều cao paper = tổng chiều cao control + khoảng trống trên dưới
+            pnlPaper.Height = totalHeight + pnlPaper.Padding.Top + pnlPaper.Padding.Bottom;
+
             // Bind tổng kết tiền
             lblTongTienGocVal.Text = DinhDangTien(_tongTienGoc);
             lblSoTienGiamVal.Text = $"-{DinhDangTien(_soTienGiam)} ({_giamGiaPercent}%)";
@@ -98,6 +112,11 @@ namespace QLCF.Forms
             lblPhuongThucVal.Text = _phuongThuc;
             lblTienKhachDuaVal.Text = DinhDangTien(_tienKhachDua);
             lblTienTraLaiVal.Text = DinhDangTien(_tienTraLai);
+
+            // Tinh chỉnh chiều cao Form linh hoạt theo hóa đơn (Tối đa 85% chiều cao màn hình)
+            int requiredClientHeight = pnlHeader.Height + pnlMainScroll.Padding.Top + pnlPaper.Height + pnlMainScroll.Padding.Bottom + pnlBottom.Height;
+            int maxClientHeight = (int)(Screen.PrimaryScreen.WorkingArea.Height * 0.85);
+            this.ClientSize = new System.Drawing.Size(this.ClientSize.Width, Math.Min(maxClientHeight, requiredClientHeight));
 
             // Kích hoạt tính năng cuộn chuột mượt mà và căn giữa tờ bill
             CenterPaperCard();
@@ -125,10 +144,15 @@ namespace QLCF.Forms
                 {
                     if (pnlMainScroll.VerticalScroll.Visible)
                     {
+                        // Cách cuộn chuột chuẩn nhất trong WinForms (không dùng VerticalScroll.Value)
                         int step = e.Delta > 0 ? -50 : 50;
-                        int newPos = pnlMainScroll.VerticalScroll.Value + step;
-                        newPos = Math.Max(pnlMainScroll.VerticalScroll.Minimum, Math.Min(pnlMainScroll.VerticalScroll.Maximum, newPos));
-                        pnlMainScroll.VerticalScroll.Value = newPos;
+                        int currentPos = Math.Abs(pnlMainScroll.AutoScrollPosition.Y);
+                        int newPos = currentPos + step;
+                        
+                        // Đảm bảo không cuộn quá giới hạn trên và dưới
+                        if (newPos < 0) newPos = 0;
+                        
+                        pnlMainScroll.AutoScrollPosition = new System.Drawing.Point(0, newPos);
                     }
                 };
 
@@ -212,12 +236,10 @@ namespace QLCF.Forms
                     }
                 }
 
-                MessageBox.Show(
-                    "Thanh toán thành công và đã lưu hóa đơn vào hệ thống!",
-                    "Thông báo thanh toán",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
-                );
+                using (var toast = new FrmSuccessToast("Thanh toán thành công!", "Đã lưu hóa đơn vào hệ thống"))
+                {
+                    toast.ShowDialog();
+                }
 
                 this.DialogResult = DialogResult.OK;
                 this.Close();

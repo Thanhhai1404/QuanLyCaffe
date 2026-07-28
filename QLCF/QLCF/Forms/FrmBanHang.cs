@@ -525,15 +525,31 @@ namespace QLCF.Forms
                 Margin = new Padding(6),
                 Cursor = Cursors.Hand,
                 BackColor = Color.White,
-                BorderStyle = BorderStyle.FixedSingle,
                 Tag = mon
+            };
+
+            // Custom Paint for rounded border
+            pnlCard.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                int radius = 8;
+                System.Drawing.Drawing2D.GraphicsPath path = new System.Drawing.Drawing2D.GraphicsPath();
+                path.AddArc(0, 0, radius, radius, 180, 90);
+                path.AddArc(pnlCard.Width - radius - 1, 0, radius, radius, 270, 90);
+                path.AddArc(pnlCard.Width - radius - 1, pnlCard.Height - radius - 1, radius, radius, 0, 90);
+                path.AddArc(0, pnlCard.Height - radius - 1, radius, radius, 90, 90);
+                path.CloseFigure();
+                using (Pen pen = new Pen(UITheme.BorderColor, 1))
+                {
+                    e.Graphics.DrawPath(pen, path);
+                }
             };
 
             PictureBox picThumb = new PictureBox
             {
                 Width = 135,
                 Height = 95,
-                Location = new Point(4, 4),
+                Location = new Point(5, 5),
                 SizeMode = PictureBoxSizeMode.Zoom,
                 BackColor = Color.FromArgb(248, 250, 252),
                 Tag = mon,
@@ -555,10 +571,10 @@ namespace QLCF.Forms
             Label lblGia = new Label
             {
                 Text = DinhDangTien(mon.DonGia),
-                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold, GraphicsUnit.Point),
-                ForeColor = Color.FromArgb(217, 119, 6), // Amber-600 Accent
-                Location = new Point(4, 148),
-                Size = new Size(135, 22),
+                Font = new Font("Segoe UI", 11F, FontStyle.Bold, GraphicsUnit.Point),
+                ForeColor = UITheme.PrimaryAccent, // Amber-600 Accent
+                Location = new Point(4, 145),
+                Size = new Size(135, 25),
                 TextAlign = ContentAlignment.MiddleRight,
                 Tag = mon
             };
@@ -574,10 +590,12 @@ namespace QLCF.Forms
                 ctrl.MouseEnter += (s, e) =>
                 {
                     pnlCard.BackColor = Color.FromArgb(254, 243, 199); // Amber-50
+                    pnlCard.Invalidate();
                 };
                 ctrl.MouseLeave += (s, e) =>
                 {
                     pnlCard.BackColor = Color.White;
+                    pnlCard.Invalidate();
                 };
                 ctrl.Click += (s, e) =>
                 {
@@ -666,7 +684,7 @@ namespace QLCF.Forms
                 if (!maHD.HasValue || maHD.Value <= 0)
                 {
                     dgvChiTietHoaDon.DataSource = null;
-                    lblTongTamTinh.Text = "Tổng tạm tính: 0 đ";
+                    lblTongTamTinh.Text = "Tổng: 0 đ";
                     DatLaiMonDangChon();
                     return;
                 }
@@ -740,7 +758,7 @@ namespace QLCF.Forms
                 }
 
                 decimal tongTamTinh = listChiTiet.Sum(x => x.ThanhTien);
-                lblTongTamTinh.Text = "Tổng tạm tính: " + DinhDangTien(tongTamTinh);
+                lblTongTamTinh.Text = "Tổng: " + DinhDangTien(tongTamTinh);
 
                 DatLaiMonDangChon();
             }
@@ -800,7 +818,10 @@ namespace QLCF.Forms
                     }
                 }
 
-                MessageBox.Show("Đã thêm món vào hóa đơn.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                using (var toast = new FrmSuccessToast("Đã thêm món", "Cập nhật dữ liệu thành công"))
+                {
+                    toast.ShowDialog();
+                }
 
                 // Reset thông tin thêm món
                 nudSoLuong.Value = 1;
@@ -1051,7 +1072,10 @@ namespace QLCF.Forms
                     }
                 }
 
-                MessageBox.Show("Cập nhật số lượng thành công.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                using (var toast = new FrmSuccessToast("Cập nhật số lượng", "Thành công"))
+                {
+                    toast.ShowDialog();
+                }
 
                 LamMoiDuLieuBanDangChon();
                 DatLaiMonDangChon();
@@ -1104,7 +1128,10 @@ namespace QLCF.Forms
                     }
                 }
 
-                MessageBox.Show("Đã xóa món khỏi hóa đơn.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                using (var toast = new FrmSuccessToast("Đã xóa món", "Cập nhật dữ liệu thành công"))
+                {
+                    toast.ShowDialog();
+                }
 
                 LamMoiDuLieuBanDangChon();
                 DatLaiMonDangChon();

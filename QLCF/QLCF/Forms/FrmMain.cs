@@ -40,9 +40,21 @@ namespace QLCF.Forms
             if (pnlHeader != null) pnlHeader.BackColor = UITheme.HeaderDark;
             if (pnlMenu != null) pnlMenu.BackColor = UITheme.PrimaryDark;
             if (pnlLogo != null) pnlLogo.BackColor = Color.FromArgb(15, 23, 42);
-            if (btnDangXuat != null) UITheme.ApplyStyleToButton(btnDangXuat, isDanger: true);
+            if (btnDangXuat != null) 
+            {
+                UITheme.ApplyStyleToButton(btnDangXuat, isDanger: true);
+                btnDangXuat.Text = "🚪 Đăng xuất";
+            }
 
             // Style menu buttons
+            btnBanHang.Text = "🛒 Bán hàng";
+            btnMonAn.Text = "🍔 Quản lý món";
+            btnKhuVucBan.Text = "🪑 Khu vực bàn";
+            btnNhanVien.Text = "👥 Nhân viên";
+            btnHoaDon.Text = "🧾 Hóa đơn";
+            btnThongKe.Text = "📊 Thống kê";
+            btnDoiMatKhau.Text = "🔑 Đổi mật khẩu";
+
             Button[] menuButtons = new Button[] { btnBanHang, btnMonAn, btnKhuVucBan, btnNhanVien, btnHoaDon, btnThongKe, btnDoiMatKhau };
             foreach (Button b in menuButtons)
             {
@@ -53,6 +65,24 @@ namespace QLCF.Forms
                 b.ForeColor = Color.FromArgb(226, 232, 240);
                 b.Font = UITheme.FontHeader;
                 b.Cursor = Cursors.Hand;
+                b.TextAlign = ContentAlignment.MiddleLeft;
+                b.Padding = new Padding(10, 0, 0, 0);
+
+                // Hover effects
+                b.MouseEnter += (s, ev) => {
+                    if (activeMenuButton != b)
+                    {
+                        b.BackColor = Color.White;
+                        b.ForeColor = UITheme.PrimaryAccent;
+                    }
+                };
+                b.MouseLeave += (s, ev) => {
+                    if (activeMenuButton != b)
+                    {
+                        b.BackColor = UITheme.PrimaryDark;
+                        b.ForeColor = Color.FromArgb(226, 232, 240);
+                    }
+                };
             }
 
             if (btnDanhMuc != null) btnDanhMuc.Visible = false;
@@ -133,6 +163,37 @@ namespace QLCF.Forms
             }
         }
 
+        private void SetActiveMenu(Button btn)
+        {
+            if (activeMenuButton != null)
+            {
+                // Reset previous active button
+                activeMenuButton.BackColor = UITheme.PrimaryDark;
+                activeMenuButton.Paint -= ActiveButton_Paint;
+                activeMenuButton.Invalidate();
+            }
+
+            activeMenuButton = btn;
+            if (activeMenuButton != null)
+            {
+                activeMenuButton.BackColor = Color.White;
+                activeMenuButton.Paint += ActiveButton_Paint;
+                activeMenuButton.Invalidate();
+            }
+        }
+
+        private void ActiveButton_Paint(object sender, PaintEventArgs e)
+        {
+            if (sender is Button btn)
+            {
+                // Draw 4px Amber left accent bar
+                using (SolidBrush brush = new SolidBrush(UITheme.PrimaryAccent))
+                {
+                    e.Graphics.FillRectangle(brush, 0, 0, 4, btn.Height);
+                }
+            }
+        }
+
         private void OnEmbeddedFormClosed(object sender, FormClosedEventArgs e)
         {
             // If pnlNoiDung becomes empty after closing an embedded form, return to default view
@@ -157,23 +218,13 @@ namespace QLCF.Forms
             foreach (Button b in menuButtons)
             {
                 if (b == null) continue;
-                b.BackColor = UITheme.PrimaryDark;
                 b.ForeColor = Color.FromArgb(226, 232, 240);
             }
 
-            // Highlight active button
-            selectedButton.BackColor = Color.FromArgb(15, 23, 42); // Darker Slate focus
-            selectedButton.ForeColor = Color.FromArgb(245, 158, 11); // Amber / Gold text
-
-            activeMenuButton = selectedButton;
-
-            if (pnlActiveIndicator != null)
-            {
-                pnlActiveIndicator.Top = selectedButton.Top;
-                pnlActiveIndicator.Height = selectedButton.Height;
-                pnlActiveIndicator.Visible = true;
-                pnlActiveIndicator.BringToFront();
-            }
+            SetActiveMenu(selectedButton);
+            
+            // Highlight active text
+            selectedButton.ForeColor = UITheme.PrimaryAccent; // Amber / Gold text
         }
 
         public void MoDashboardAdmin()

@@ -316,9 +316,9 @@ namespace QLCF.Forms
             // colTenMon
             // 
             this.colTenMon.DataPropertyName = "TenMon";
-            this.colTenMon.FillWeight = 140F;
+            this.colTenMon.FillWeight = 30F;
             this.colTenMon.HeaderText = "Tên món";
-            this.colTenMon.MinimumWidth = 130;
+            this.colTenMon.MinimumWidth = 80;
             this.colTenMon.Name = "colTenMon";
             this.colTenMon.ReadOnly = true;
             // 
@@ -329,16 +329,16 @@ namespace QLCF.Forms
             this.colGiamSL.HeaderText = "-";
             this.colGiamSL.MinimumWidth = 26;
             this.colGiamSL.Name = "colGiamSL";
-            this.colGiamSL.Text = "➖";
+            this.colGiamSL.Text = "-";
             this.colGiamSL.UseColumnTextForButtonValue = true;
-            this.colGiamSL.FillWeight = 22F;
+            this.colGiamSL.FillWeight = 8F;
             // 
             // colSoLuong
             // 
             this.colSoLuong.DataPropertyName = "SoLuong";
             dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             this.colSoLuong.DefaultCellStyle = dataGridViewCellStyle4;
-            this.colSoLuong.FillWeight = 28F;
+            this.colSoLuong.FillWeight = 8F;
             this.colSoLuong.HeaderText = "SL";
             this.colSoLuong.MinimumWidth = 28;
             this.colSoLuong.Name = "colSoLuong";
@@ -351,9 +351,9 @@ namespace QLCF.Forms
             this.colTangSL.HeaderText = "+";
             this.colTangSL.MinimumWidth = 26;
             this.colTangSL.Name = "colTangSL";
-            this.colTangSL.Text = "➕";
+            this.colTangSL.Text = "+";
             this.colTangSL.UseColumnTextForButtonValue = true;
-            this.colTangSL.FillWeight = 22F;
+            this.colTangSL.FillWeight = 8F;
             // 
             // colDonGia
             // 
@@ -361,9 +361,9 @@ namespace QLCF.Forms
             dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
             dataGridViewCellStyle6.Format = "#,##0";
             this.colDonGia.DefaultCellStyle = dataGridViewCellStyle6;
-            this.colDonGia.FillWeight = 55F;
+            this.colDonGia.FillWeight = 16F;
             this.colDonGia.HeaderText = "Đơn giá";
-            this.colDonGia.MinimumWidth = 65;
+            this.colDonGia.MinimumWidth = 60;
             this.colDonGia.Name = "colDonGia";
             this.colDonGia.ReadOnly = true;
             // 
@@ -373,16 +373,16 @@ namespace QLCF.Forms
             dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
             dataGridViewCellStyle7.Format = "#,##0";
             this.colThanhTien.DefaultCellStyle = dataGridViewCellStyle7;
-            this.colThanhTien.FillWeight = 65F;
+            this.colThanhTien.FillWeight = 16F;
             this.colThanhTien.HeaderText = "Thành tiền";
-            this.colThanhTien.MinimumWidth = 75;
+            this.colThanhTien.MinimumWidth = 65;
             this.colThanhTien.Name = "colThanhTien";
             this.colThanhTien.ReadOnly = true;
             // 
             // colGhiChu
             // 
             this.colGhiChu.DataPropertyName = "GhiChu";
-            this.colGhiChu.FillWeight = 45F;
+            this.colGhiChu.FillWeight = 12F;
             this.colGhiChu.HeaderText = "Ghi chú";
             this.colGhiChu.MinimumWidth = 50;
             this.colGhiChu.Name = "colGhiChu";
@@ -395,9 +395,9 @@ namespace QLCF.Forms
             this.colXoa.HeaderText = "Xóa";
             this.colXoa.MinimumWidth = 26;
             this.colXoa.Name = "colXoa";
-            this.colXoa.Text = "❌";
+            this.colXoa.Text = "X";
             this.colXoa.UseColumnTextForButtonValue = true;
-            this.colXoa.FillWeight = 22F;
+            this.colXoa.FillWeight = 8F;
             // 
             // pnlThemMonAction
             // 
@@ -571,13 +571,13 @@ namespace QLCF.Forms
             // 
             this.lblTongTamTinh.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblTongTamTinh.Font = new System.Drawing.Font("Segoe UI", 12.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblTongTamTinh.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(38)))), ((int)(((byte)(38)))));
-            this.lblTongTamTinh.Location = new System.Drawing.Point(10, 142);
+            this.lblTongTamTinh.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTongTamTinh.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(217)))), ((int)(((byte)(119)))), ((int)(((byte)(6)))));
+            this.lblTongTamTinh.Location = new System.Drawing.Point(10, 132);
             this.lblTongTamTinh.Name = "lblTongTamTinh";
-            this.lblTongTamTinh.Size = new System.Drawing.Size(420, 30);
+            this.lblTongTamTinh.Size = new System.Drawing.Size(420, 42);
             this.lblTongTamTinh.TabIndex = 11;
-            this.lblTongTamTinh.Text = "Tổng tạm tính: 0 đ";
+            this.lblTongTamTinh.Text = "Tổng: 0 đ";
             this.lblTongTamTinh.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // btnThanhToan
