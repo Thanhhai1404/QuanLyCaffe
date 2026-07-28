@@ -46,7 +46,17 @@ namespace QLCF.Forms
             _giamGiaPercent = giamGiaPercent;
             _soTienGiam = soTienGiam;
             _tongCanThanhToan = tongCanThanhToan;
-            _phuongThuc = phuongThuc;
+            
+            // Chuẩn hóa phương thức thanh toán hợp lệ với CSDL (Chỉ chấp nhận 'Tiền mặt' hoặc 'Chuyển khoản')
+            if (!string.IsNullOrWhiteSpace(phuongThuc) && phuongThuc.IndexOf("Chuyển khoản", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                _phuongThuc = "Chuyển khoản";
+            }
+            else
+            {
+                _phuongThuc = "Tiền mặt";
+            }
+
             _tienKhachDua = tienKhachDua;
             _tienTraLai = tienTraLai;
             _tenThuNgan = string.IsNullOrWhiteSpace(tenThuNgan) ? "Thu ngân" : tenThuNgan;
@@ -63,6 +73,9 @@ namespace QLCF.Forms
             int maxHeight = Math.Min(650, (int)(Screen.PrimaryScreen.WorkingArea.Height * 0.85));
             this.Height = maxHeight;
             this.StartPosition = FormStartPosition.CenterParent;
+
+            if (pnlPaper != null) pnlPaper.Padding = new Padding(14, 14, 14, 40);
+            if (pnlMainScroll != null) pnlMainScroll.Padding = new Padding(15, 15, 15, 40);
 
             lblMaHD.Text = $"Mã HD: #HD{_maHD:D5}";
             lblNgayGio.Text = $"Ngày: {DateTime.Now:dd/MM/yyyy HH:mm:ss}";
@@ -130,6 +143,10 @@ namespace QLCF.Forms
         {
             try
             {
+                string phuongThucChuan = (_phuongThuc != null && _phuongThuc.IndexOf("Chuyển khoản", StringComparison.OrdinalIgnoreCase) >= 0)
+                    ? "Chuyển khoản"
+                    : "Tiền mặt";
+
                 using (SqlConnection conn = Db.CreateConnection())
                 {
                     conn.Open();
@@ -142,7 +159,7 @@ namespace QLCF.Forms
                             cmd.Parameters.Add("@MaHD", SqlDbType.Int).Value = _maHD;
                             cmd.Parameters.Add("@MaNVThanhToan", SqlDbType.Int).Value = UserSession.MaNV;
                             cmd.Parameters.Add("@GiamGia", SqlDbType.Int).Value = _giamGiaPercent;
-                            cmd.Parameters.Add("@PhuongThucThanhToan", SqlDbType.NVarChar, 50).Value = _phuongThuc;
+                            cmd.Parameters.Add("@PhuongThucThanhToan", SqlDbType.NVarChar, 50).Value = phuongThucChuan;
                             cmd.Parameters.Add("@TienKhachDua", SqlDbType.Decimal).Value = (object)_tienKhachDua ?? DBNull.Value;
 
                             cmd.ExecuteNonQuery();
@@ -171,7 +188,7 @@ namespace QLCF.Forms
                                 cmdHD.Parameters.Add("@GiamGia", SqlDbType.Int).Value = _giamGiaPercent;
                                 cmdHD.Parameters.Add("@SoTienGiam", SqlDbType.Decimal).Value = _soTienGiam;
                                 cmdHD.Parameters.Add("@TongTienThanhToan", SqlDbType.Decimal).Value = _tongCanThanhToan;
-                                cmdHD.Parameters.Add("@PhuongThucThanhToan", SqlDbType.NVarChar, 50).Value = _phuongThuc;
+                                cmdHD.Parameters.Add("@PhuongThucThanhToan", SqlDbType.NVarChar, 50).Value = phuongThucChuan;
                                 cmdHD.Parameters.Add("@TienKhachDua", SqlDbType.Decimal).Value = _tienKhachDua;
                                 cmdHD.Parameters.Add("@TienTraLai", SqlDbType.Decimal).Value = _tienTraLai;
                                 cmdHD.Parameters.Add("@MaNV", SqlDbType.Int).Value = UserSession.MaNV;

@@ -9,25 +9,25 @@ namespace QLCF.Data
     public static class VietQRConfig
     {
         // ========== THÔNG TIN NGÂN HÀNG NHẬN TIỀN ==========
-        // Mã ngân hàng (BIN hoặc tên viết tắt). Ví dụ: "mbbank", "vietcombank", "techcombank", "970422"
-        public static string BankId = "vietinbank";
+        // Mã ngân hàng (BIN hoặc tên viết tắt). Ví dụ: "MBBank", "VCB", "vietcombank", "970422"
+        public static string BankId = "MBBank";
 
         // Số tài khoản ngân hàng nhận tiền
-        public static string AccountNo = "1052443754";
+        public static string AccountNo = "0394907991";
 
         // Tên chủ tài khoản (KHÔNG DẤU, viết hoa)
         public static string AccountName = "DO THANH HAI";
 
-        // Mẫu QR: compact (540x540), compact2 (540x640 có thông tin), qr_only (480x480), print (600x776)
-        public static string Template = "compact2";
+        // Mẫu QR: compact, compact2, qr_only, print
+        public static string Template = "compact";
 
         // ========== SEPAY API (AUTO-CHECK THANH TOÁN) ==========
-        // URL endpoint SePay API v2
-        public static string SePayApiUrl = "https://userapi.sepay.vn/v2/transactions";
+        // URL endpoint SePay API (danh sách giao dịch)
+        public static string SePayApiUrl = "https://my.sepay.vn/userapi/transactions/list";
 
         // Bearer Token lấy từ dashboard SePay (my.sepay.vn > Tích hợp > API Key)
-        // Để trống nếu chưa có → hệ thống chỉ hỗ trợ xác nhận thủ công
-        public static string SePayBearerToken = "";
+        // ⚠️ ĐIỀN API KEY THẬT CỦA BẠN VÀO ĐÂY
+        public static string SePayBearerToken = "QGRUYSWMCID5Z9SDCNYEF23FHW3ZOFHYA0SNRVQQJGKK6MCLTILXKBIM074SKO1Z";
 
         // Khoảng thời gian polling (ms) - mặc định 3 giây
         public static int PollingIntervalMs = 3000;
@@ -35,14 +35,12 @@ namespace QLCF.Data
         // ========== HÀM TIỆN ÍCH ==========
 
         /// <summary>
-        /// Sinh URL ảnh VietQR động theo chuẩn Napas Quick Link.
+        /// Sinh URL ảnh QR động SePay chuẩn.
         /// </summary>
         public static string BuildQRUrl(decimal amount, int maHD)
         {
-            string addInfo = Uri.EscapeDataString($"QLCF HD{maHD:D5}");
-            string accName = Uri.EscapeDataString(AccountName);
-            return $"https://img.vietqr.io/image/{BankId}-{AccountNo}-{Template}.png"
-                 + $"?amount={(long)amount}&addInfo={addInfo}&accountName={accName}";
+            string des = Uri.EscapeDataString($"QLCF HD{maHD:D5}");
+            return $"https://qr.sepay.vn/img?bank={BankId}&acc={AccountNo}&template={Template}&amount={(long)amount}&des={des}";
         }
 
         /// <summary>
@@ -60,10 +58,12 @@ namespace QLCF.Data
         {
             switch (BankId.ToLower())
             {
+                case "mb":
                 case "mbbank":
-                case "970422": return "MB Bank";
+                case "970422": return "MBBank";
+                case "vcb":
                 case "vietcombank":
-                case "970436": return "Vietcombank";
+                case "970436": return "Vietcombank (VCB)";
                 case "techcombank":
                 case "970407": return "Techcombank";
                 case "vietinbank":

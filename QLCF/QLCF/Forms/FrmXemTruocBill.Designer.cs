@@ -180,7 +180,7 @@ namespace QLCF.Forms
             this.pnlPaper.MaximumSize = new System.Drawing.Size(380, 0);
             this.pnlPaper.MinimumSize = new System.Drawing.Size(380, 500);
             this.pnlPaper.Name = "pnlPaper";
-            this.pnlPaper.Padding = new System.Windows.Forms.Padding(14);
+            this.pnlPaper.Padding = new System.Windows.Forms.Padding(14, 14, 14, 40);
             this.pnlPaper.Size = new System.Drawing.Size(380, 550);
             this.pnlPaper.TabIndex = 0;
             // 
@@ -191,7 +191,7 @@ namespace QLCF.Forms
             this.lblFooterMsg.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(71)))), ((int)(((byte)(85)))), ((int)(((byte)(105)))));
             this.lblFooterMsg.Location = new System.Drawing.Point(14, 495);
             this.lblFooterMsg.Name = "lblFooterMsg";
-            this.lblFooterMsg.Size = new System.Drawing.Size(350, 35);
+            this.lblFooterMsg.Size = new System.Drawing.Size(350, 55);
             this.lblFooterMsg.TabIndex = 13;
             this.lblFooterMsg.Text = "Cảm ơn quý khách & Hẹn gặp lại!";
             this.lblFooterMsg.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;

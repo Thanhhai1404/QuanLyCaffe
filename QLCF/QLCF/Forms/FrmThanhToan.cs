@@ -23,8 +23,10 @@ namespace QLCF.Forms
 
         // VietQR Auto-Check fields
         private Timer _timerCheckPaid;
-        private long _lastSePayTxId = 0;
         private bool _isPaymentConfirmed = false;
+        private DateTime _openFormTime;
+        private readonly HashSet<long> _initialTxIds = new HashSet<long>();
+        private bool _isSnapshotLoaded = false;
 
         public FrmThanhToan(int maHD, int maBan, string tenBan, decimal tongTienGoc)
         {
@@ -34,6 +36,7 @@ namespace QLCF.Forms
             _maBan = maBan;
             _tenBan = tenBan;
             _tongTienGoc = tongTienGoc;
+            _openFormTime = DateTime.Now;
 
             this.Load += FrmThanhToan_Load;
             this.nudGiamGia.ValueChanged += (s, e) => TinhToanThanhToan();
@@ -127,7 +130,7 @@ namespace QLCF.Forms
             }
         }
 
-        // ========== VIETQR ĐỘNG ==========
+        // ========== VIETQR ĐỘNG & SEPAY AUTO-CHECK ==========
 
         private void HienThiVietQR(decimal amount)
         {
@@ -135,8 +138,14 @@ namespace QLCF.Forms
 
             pnlVietQR.Visible = true;
             _isPaymentConfirmed = false;
+            _openFormTime = DateTime.Now;
 
-            // Tải ảnh QR không đồng bộ từ VietQR Quick Link
+            // Chụp snapshot danh sách ID giao dịch hiện có trên SePay
+            _initialTxIds.Clear();
+            _isSnapshotLoaded = false;
+            _ = SnapshotExistingTxIdsAsync();
+
+            // Tải ảnh QR động từ SePay QR Service
             string qrUrl = VietQRConfig.BuildQRUrl(amount, _maHD);
             try
             {
@@ -160,34 +169,7 @@ namespace QLCF.Forms
             BatDauKiemTraThanhToan(amount);
         }
 
-        // ========== AUTO-CHECK THANH TOÁN (TIMER POLLING) ==========
-
-        private void BatDauKiemTraThanhToan(decimal amount)
-        {
-            if (!VietQRConfig.IsAutoCheckEnabled)
-                return; // Không có API key → chỉ xác nhận thủ công
-
-            if (_timerCheckPaid == null)
-            {
-                _timerCheckPaid = new Timer();
-                _timerCheckPaid.Interval = VietQRConfig.PollingIntervalMs;
-            }
-
-            decimal expectedAmount = amount;
-            _timerCheckPaid.Tick -= TimerCheckPaid_Tick;
-            _timerCheckPaid.Tag = expectedAmount; // Lưu số tiền cần kiểm tra
-            _timerCheckPaid.Tick += TimerCheckPaid_Tick;
-            _timerCheckPaid.Start();
-        }
-
-        private async void TimerCheckPaid_Tick(object sender, EventArgs e)
-        {
-            if (_isPaymentConfirmed) return;
-            decimal expectedAmount = _timerCheckPaid.Tag is decimal d ? d : 0m;
-            await KiemTraGiaoDichAsync(expectedAmount);
-        }
-
-        private async Task KiemTraGiaoDichAsync(decimal expectedAmount)
+        private async Task SnapshotExistingTxIdsAsync()
         {
             try
             {
@@ -197,30 +179,139 @@ namespace QLCF.Forms
                     client.DefaultRequestHeaders.Authorization =
                         new AuthenticationHeaderValue("Bearer", VietQRConfig.SePayBearerToken);
 
-                    string url = $"{VietQRConfig.SePayApiUrl}?since_id={_lastSePayTxId}&limit=20";
+                    string url = $"{VietQRConfig.SePayApiUrl}?limit=10";
                     var response = await client.GetAsync(url);
-
                     if (response.IsSuccessStatusCode)
                     {
                         string json = await response.Content.ReadAsStringAsync();
-                        string expectedContent = VietQRConfig.BuildTransferContent(_maHD).ToUpper();
-
-                        // Parse JSON đơn giản (tìm giao dịch khớp nội dung + số tiền)
-                        if (json.Contains(expectedContent) || json.Contains($"QLCF HD{_maHD:D5}"))
+                        string[] transactions = json.Split(new[] { "{\"id\"" }, StringSplitOptions.RemoveEmptyEntries);
+                        foreach (string tx in transactions)
                         {
-                            // Kiểm tra số tiền (tìm "transferAmount" hoặc "amount_in" gần đúng)
-                            long expectedAmountLong = (long)expectedAmount;
-                            if (json.Contains(expectedAmountLong.ToString()))
+                            long id = ExtractTxId(tx);
+                            if (id > 0)
                             {
-                                XacNhanThanhToanTuDong();
+                                _initialTxIds.Add(id);
                             }
                         }
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Mất mạng → bỏ qua, chờ lần poll tiếp theo
+                System.Diagnostics.Debug.WriteLine($"[SnapshotTxIds Error]: {ex.Message}");
+            }
+            finally
+            {
+                _isSnapshotLoaded = true;
+            }
+        }
+
+        private long ExtractTxId(string txBlock)
+        {
+            try
+            {
+                int colonIdx = txBlock.IndexOf(':');
+                if (colonIdx >= 0)
+                {
+                    int commaIdx = txBlock.IndexOf(',', colonIdx);
+                    if (commaIdx > colonIdx)
+                    {
+                        string idStr = txBlock.Substring(colonIdx + 1, commaIdx - colonIdx - 1).Trim().Trim('"');
+                        if (long.TryParse(idStr, out long txId))
+                            return txId;
+                    }
+                }
+            }
+            catch { }
+            return 0;
+        }
+
+        // ========== AUTO-CHECK THANH TOÁN (TIMER POLLING 2S) ==========
+
+        private void BatDauKiemTraThanhToan(decimal amount)
+        {
+            if (!VietQRConfig.IsAutoCheckEnabled)
+                return; // Không có API key → chỉ xác nhận thủ công
+
+            if (_timerCheckPaid == null)
+            {
+                _timerCheckPaid = new Timer();
+            }
+
+            _timerCheckPaid.Interval = 2000; // Polling mỗi 2 giây
+            decimal expectedAmount = amount;
+            _timerCheckPaid.Tick -= TimerCheckPaid_Tick;
+            _timerCheckPaid.Tag = expectedAmount;
+            _timerCheckPaid.Tick += TimerCheckPaid_Tick;
+            _timerCheckPaid.Start();
+        }
+
+        private async void TimerCheckPaid_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_isPaymentConfirmed) return;
+                decimal expectedAmount = _timerCheckPaid.Tag is decimal d ? d : 0m;
+                await KiemTraGiaoDichAsync(expectedAmount);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[TimerCheckPaid Error]: {ex.Message}");
+            }
+        }
+
+        private async Task KiemTraGiaoDichAsync(decimal expectedAmount)
+        {
+            if (_isPaymentConfirmed) return;
+
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromSeconds(5);
+                    client.DefaultRequestHeaders.Authorization =
+                        new AuthenticationHeaderValue("Bearer", VietQRConfig.SePayBearerToken);
+
+                    // Endpoint lấy 5 giao dịch gần nhất
+                    string url = $"{VietQRConfig.SePayApiUrl}?limit=5";
+                    var response = await client.GetAsync(url);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string json = await response.Content.ReadAsStringAsync();
+                        long expectedAmountLong = (long)expectedAmount;
+
+                        string[] transactions = json.Split(new[] { "{\"id\"" }, StringSplitOptions.RemoveEmptyEntries);
+
+                        foreach (string tx in transactions)
+                        {
+                            if (!tx.Contains("transaction_content")) continue;
+
+                            long txId = ExtractTxId(tx);
+
+                            // 1. Kiểm tra số tiền cộng vào (amount_in) khớp chính xác số tiền cần thanh toán
+                            bool isAmountMatched = tx.Contains($"\"amount_in\":{expectedAmountLong}")
+                                                || tx.Contains($"\"amount_in\": {expectedAmountLong}")
+                                                || tx.Contains($"\"amount_in\":\"{expectedAmountLong}\"")
+                                                || tx.Contains($"\"amount_in\": \"{expectedAmountLong}\"");
+                            if (!isAmountMatched) continue;
+
+                            // 2. Kiểm tra nếu giao dịch ID này ĐÃ TỒN TẠI từ trước khi mở form -> bỏ qua (tránh lệch timezone)
+                            if (txId > 0 && _initialTxIds.Contains(txId))
+                            {
+                                continue;
+                            }
+
+                            // ĐỐI SOÁT THÀNH CÔNG: Giao dịch mới phát sinh khớp đúng số tiền!
+                            XacNhanThanhToanTuDong();
+                            return;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[KiemTraGiaoDich Error]: {ex.Message}");
             }
         }
 
@@ -231,23 +322,15 @@ namespace QLCF.Forms
 
             DungTimerCheckPaid();
 
-            // Phát tiếng báo hiệu
-            SystemSounds.Beep.Play();
+            // Âm thanh thông báo thành công
+            try { SystemSounds.Beep.Play(); } catch { }
 
-            // Cập nhật trạng thái trên UI
+            // Cập nhật trạng thái UI
             lblQRStatus.Text = "✅ Đã nhận tiền thành công!";
             lblQRStatus.ForeColor = Color.FromArgb(5, 150, 105); // Emerald
 
-            // Tự động kích hoạt xuất bill sau 1 giây
-            Timer delayTimer = new Timer();
-            delayTimer.Interval = 1000;
-            delayTimer.Tick += (s, e) =>
-            {
-                delayTimer.Stop();
-                delayTimer.Dispose();
-                ThucHienXuatBill("Chuyển khoản (VietQR)");
-            };
-            delayTimer.Start();
+            // Tự động chuyển ngay sang FrmXemTruocBill để xuất bill & lưu CSDL
+            ThucHienXuatBill("Chuyển khoản");
         }
 
         private void DungTimerCheckPaid()
@@ -263,27 +346,10 @@ namespace QLCF.Forms
         private void btnXacNhanCKThuCong_Click(object sender, EventArgs e)
         {
             DungTimerCheckPaid();
-
-            DialogResult result = MessageBox.Show(
-                "Bạn xác nhận đã nhận được tiền chuyển khoản từ khách hàng?",
-                "Xác nhận chuyển khoản",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
-            );
-
-            if (result == DialogResult.Yes)
-            {
-                _isPaymentConfirmed = true;
-                lblQRStatus.Text = "✅ Đã xác nhận thủ công!";
-                lblQRStatus.ForeColor = Color.FromArgb(5, 150, 105);
-                ThucHienXuatBill("Chuyển khoản (VietQR)");
-            }
-            else
-            {
-                // Bật lại Timer nếu có
-                if (VietQRConfig.IsAutoCheckEnabled && _timerCheckPaid != null)
-                    _timerCheckPaid.Start();
-            }
+            _isPaymentConfirmed = true;
+            lblQRStatus.Text = "✅ Đã xác nhận thủ công!";
+            lblQRStatus.ForeColor = Color.FromArgb(5, 150, 105);
+            ThucHienXuatBill("Chuyển khoản");
         }
 
         // ========== XUẤT BILL ==========
@@ -325,7 +391,7 @@ namespace QLCF.Forms
                     );
                     return;
                 }
-                ThucHienXuatBill("Chuyển khoản (VietQR)");
+                ThucHienXuatBill("Chuyển khoản");
             }
         }
 
