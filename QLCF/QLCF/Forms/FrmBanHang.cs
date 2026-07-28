@@ -1341,24 +1341,29 @@ namespace QLCF.Forms
 
         private void btnKetCaTopBar_Click(object sender, EventArgs e)
         {
-            var confirm = MessageBox.Show(
-                $"Bạn đang thực hiện KẾT CA.\nThời gian vào ca: {shiftStartTime:HH:mm dd/MM/yyyy}\nThời gian hiện tại: {DateTime.Now:HH:mm dd/MM/yyyy}\n\nXác nhận kết thúc ca làm?",
-                "Xác Nhận Kết Ca",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
-            );
+            TimeSpan duration = DateTime.Now - shiftStartTime;
+            string msg = $"Xác nhận KẾT CA LÀM VIỆC?\n- Thời gian vào ca: {shiftStartTime:HH:mm dd/MM/yyyy}\n- Thời gian kết ca: {DateTime.Now:HH:mm dd/MM/yyyy}\n- Thời lượng ca này: {(int)duration.TotalHours} giờ {duration.Minutes} phút";
 
-            if (confirm == DialogResult.Yes)
+            if (MessageBox.Show(msg, "Xác nhận kết ca", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                if (ShiftService.CheckOutShift(UserSession.CurrentShiftId, out decimal tongGioLam))
+                if (ShiftService.DirectCheckOut(UserSession.CurrentShiftId))
                 {
                     shiftTimer.Stop();
-                    MessageBox.Show($"Kết ca thành công!\nTổng thời gian làm việc: {tongGioLam} giờ", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    this.Close(); // Return to dashboard
+                    MessageBox.Show("Kết ca thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    
+                    FrmMain main = this.FindForm() as FrmMain;
+                    if (main != null)
+                    {
+                        main.Logout();
+                    }
+                    else
+                    {
+                        this.Close();
+                    }
                 }
                 else
                 {
-                    MessageBox.Show("Lỗi khi kết ca. Vui lòng thử lại!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Có lỗi xảy ra khi cập nhật ca làm.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }

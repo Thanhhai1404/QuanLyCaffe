@@ -607,21 +607,19 @@ namespace QLCF.Forms
                     conn.Open();
                     string query = @"
                         SELECT 
-                            nv.MaNV AS MaNhanVien,
-                            nv.HoTen AS TenNhanVien,
-                            COUNT(dd.MaDiemDanh) AS TongSoCa,
-                            ISNULL(SUM(dd.TongGioLam), 0) AS TongGioLam,
-                            MIN(dd.ThoiGianVaoCa) AS CaDauTien,
-                            MAX(dd.ThoiGianKetCa) AS CaCuoiCung
+                            nv.MaNV AS [Mã NV],
+                            nv.HoTen AS [Tên Nhân Viên],
+                            CONVERT(VARCHAR(10), dd.ThoiGianVaoCa, 103) AS [Ngày],
+                            CONVERT(VARCHAR(8), dd.ThoiGianVaoCa, 108) AS [Giờ Vào Ca],
+                            CONVERT(VARCHAR(8), dd.ThoiGianKetCa, 108) AS [Giờ Kết Ca],
+                            CAST(dd.TongGioLam AS VARCHAR) + ' giờ' AS [Thời Lượng (Giờ)]
                         FROM NhanVien nv
-                        LEFT JOIN BangDiemDanh dd ON nv.MaNV = dd.MaNhanVien 
-                            AND dd.ThoiGianVaoCa >= @TuNgay 
-                            AND dd.ThoiGianVaoCa <= @DenNgay 
-                            AND dd.ThoiGianKetCa IS NOT NULL
-                        WHERE nv.TrangThai = 1
+                        INNER JOIN BangDiemDanh dd ON nv.MaNV = dd.MaNhanVien 
+                        WHERE dd.ThoiGianVaoCa >= @TuNgay 
+                          AND dd.ThoiGianVaoCa <= @DenNgay 
+                          AND dd.ThoiGianKetCa IS NOT NULL
                           AND (@TimKiem = '' OR nv.HoTen LIKE '%' + @TimKiem + '%')
-                        GROUP BY nv.MaNV, nv.HoTen
-                        ORDER BY TongGioLam DESC;
+                        ORDER BY dd.ThoiGianVaoCa DESC;
                     ";
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
@@ -634,7 +632,9 @@ namespace QLCF.Forms
                         {
                             DataTable dtGioLam = new DataTable();
                             da.Fill(dtGioLam);
-                            dgvGioLam.AutoGenerateColumns = false;
+                            dgvGioLam.DataSource = null;
+                            dgvGioLam.Columns.Clear();
+                            dgvGioLam.AutoGenerateColumns = true;
                             dgvGioLam.DataSource = dtGioLam;
                         }
                     }

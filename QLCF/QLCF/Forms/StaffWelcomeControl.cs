@@ -129,48 +129,25 @@ namespace QLCF.Forms
         {
             if (UserSession.CurrentShiftId <= 0) return;
 
-            DialogResult confirm = MessageBox.Show(
-                $"Bạn có chắc chắn muốn kết ca làm việc lúc {DateTime.Now.ToString("HH:mm")} không?",
-                "Xác nhận kết ca",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
-            );
+            TimeSpan duration = DateTime.Now - checkInTime;
+            string msg = $"Xác nhận KẾT CA LÀM VIỆC?\n- Thời gian vào ca: {checkInTime:HH:mm dd/MM/yyyy}\n- Thời gian kết ca: {DateTime.Now:HH:mm dd/MM/yyyy}\n- Thời lượng ca này: {(int)duration.TotalHours} giờ {duration.Minutes} phút";
+
+            DialogResult confirm = MessageBox.Show(msg, "Xác nhận kết ca", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (confirm == DialogResult.Yes)
             {
-                bool success = ShiftService.CheckOutShift(UserSession.CurrentShiftId, out decimal tongGioLam);
-                if (success)
+                if (ShiftService.DirectCheckOut(UserSession.CurrentShiftId))
                 {
                     SetShiftUI(false);
-
-                    MessageBox.Show(
-                        $"Kết ca thành công!\nTổng thời gian ca làm: {tongGioLam} giờ.",
-                        "Kết ca thành công",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information
-                    );
-
-                    DialogResult logoutConfirm = MessageBox.Show(
-                        "Bạn có muốn đăng xuất hệ thống không?",
-                        "Đăng xuất",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Question
-                    );
-
-                    if (logoutConfirm == DialogResult.Yes)
-                    {
-                        if (MainForm != null)
-                        {
-                            MainForm.Close(); // This triggers FrmMain_FormClosing which clears session and exits
-                        }
-                    }
+                    MessageBox.Show("Kết ca thành công!", "Kết ca thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
-                    MessageBox.Show("Có lỗi xảy ra khi kết ca.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Có lỗi xảy ra khi cập nhật ca làm.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
+
 
         private void btnMoBanHang_Click(object sender, EventArgs e)
         {

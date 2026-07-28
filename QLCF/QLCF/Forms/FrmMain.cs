@@ -256,13 +256,17 @@ namespace QLCF.Forms
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question
             );
-
             if (dr == DialogResult.Yes)
             {
-                isLoggingOut = true;
-                UserSession.Clear();
-                this.Close();
+                Logout();
             }
+        }
+
+        public void Logout()
+        {
+            isLoggingOut = true;
+            UserSession.Clear();
+            this.Close();
         }
 
         private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)

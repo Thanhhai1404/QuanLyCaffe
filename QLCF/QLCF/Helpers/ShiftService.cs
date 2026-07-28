@@ -31,6 +31,17 @@ namespace QLCF.Helpers
                                 FOREIGN KEY (MaNhanVien) REFERENCES NhanVien(MaNV)
                             );
                         END
+
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('BangDiemDanh') AND name = 'TongDoanhThu')
+                        BEGIN
+                            ALTER TABLE BangDiemDanh ADD
+                                TienDauCa DECIMAL(18,2) DEFAULT 0,
+                                DoanhThuTienMat DECIMAL(18,2) DEFAULT 0,
+                                DoanhThuChuyenKhoan DECIMAL(18,2) DEFAULT 0,
+                                TongDoanhThu DECIMAL(18,2) DEFAULT 0,
+                                TienThucTeKiet DECIMAL(18,2) DEFAULT 0,
+                                ChenhLech DECIMAL(18,2) DEFAULT 0;
+                        END
                     ";
                     using (var cmd = new SqlCommand(checkSql, conn))
                     {
@@ -120,10 +131,42 @@ namespace QLCF.Helpers
             return false;
         }
 
+        public static bool DirectCheckOut(int shiftId)
+        {
+            string query = @"
+                UPDATE BangDiemDanh 
+                SET ThoiGianKetCa = GETDATE(),
+                    TongGioLam = ROUND(DATEDIFF(MINUTE, ThoiGianVaoCa, GETDATE()) / 60.0, 2)
+                WHERE MaDiemDanh = @ShiftId AND ThoiGianKetCa IS NULL";
+
+            try
+            {
+                using (SqlConnection conn = Db.CreateConnection())
+                {
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@ShiftId", shiftId);
+                        conn.Open();
+                        bool success = cmd.ExecuteNonQuery() > 0;
+                        if (success)
+                        {
+                            UserSession.CurrentShiftId = 0; // Xóa active shift
+                        }
+                        return success;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("DirectCheckOut Error: " + ex.Message);
+            }
+            return false;
+        }
+
         /// <summary>
-        /// Điểm danh kết ca
+        /// Chốt sổ ca, cập nhật thời gian ra và các chỉ số tài chính
         /// </summary>
-        public static bool CheckOutShift(int shiftId, out decimal tongGioLam)
+        public static bool FinalizeShiftReconciliation(int shiftId, decimal tienDauCa, decimal tienMat, decimal chuyenKhoan, decimal tongDoanhThu, decimal tienThucTe, decimal chenhLech, out decimal tongGioLam)
         {
             tongGioLam = 0;
             try
@@ -131,22 +174,34 @@ namespace QLCF.Helpers
                 using (var conn = Db.CreateConnection())
                 {
                     conn.Open();
-                    // Tính bằng DATEDIFF(MINUTE) chia 60.0 để ra số thập phân
                     string sql = @"
                         UPDATE BangDiemDanh 
                         SET ThoiGianKetCa = GETDATE(),
-                            TongGioLam = CAST(DATEDIFF(MINUTE, ThoiGianVaoCa, GETDATE()) / 60.0 AS DECIMAL(5,2))
+                            TongGioLam = CAST(DATEDIFF(MINUTE, ThoiGianVaoCa, GETDATE()) / 60.0 AS DECIMAL(5,2)),
+                            TienDauCa = @TienDauCa,
+                            DoanhThuTienMat = @DoanhThuTienMat,
+                            DoanhThuChuyenKhoan = @DoanhThuChuyenKhoan,
+                            TongDoanhThu = @TongDoanhThu,
+                            TienThucTeKiet = @TienThucTeKiet,
+                            ChenhLech = @ChenhLech
                         OUTPUT INSERTED.TongGioLam
                         WHERE MaDiemDanh = @ShiftId";
 
                     using (var cmd = new SqlCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@ShiftId", shiftId);
+                        cmd.Parameters.AddWithValue("@TienDauCa", tienDauCa);
+                        cmd.Parameters.AddWithValue("@DoanhThuTienMat", tienMat);
+                        cmd.Parameters.AddWithValue("@DoanhThuChuyenKhoan", chuyenKhoan);
+                        cmd.Parameters.AddWithValue("@TongDoanhThu", tongDoanhThu);
+                        cmd.Parameters.AddWithValue("@TienThucTeKiet", tienThucTe);
+                        cmd.Parameters.AddWithValue("@ChenhLech", chenhLech);
+                        
                         var result = cmd.ExecuteScalar();
                         if (result != null && result != DBNull.Value)
                         {
                             tongGioLam = Convert.ToDecimal(result);
-                            UserSession.CurrentShiftId = 0; // Xóa active shift
+                            UserSession.CurrentShiftId = 0;
                             return true;
                         }
                     }
@@ -154,7 +209,7 @@ namespace QLCF.Helpers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("CheckOutShift Error: " + ex.Message);
+                System.Diagnostics.Debug.WriteLine("FinalizeShiftReconciliation Error: " + ex.Message);
             }
             return false;
         }
@@ -170,7 +225,7 @@ namespace QLCF.Helpers
                 {
                     conn.Open();
                     string sql = "SELECT ThoiGianVaoCa FROM BangDiemDanh WHERE MaDiemDanh = @ShiftId";
-                    using (var cmd = new SqlCommand(sql, conn))
+                    using (var cmd = new System.Data.SqlClient.SqlCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@ShiftId", shiftId);
                         var result = cmd.ExecuteScalar();
@@ -186,6 +241,14 @@ namespace QLCF.Helpers
                 System.Diagnostics.Debug.WriteLine("GetShiftCheckInTime Error: " + ex.Message);
             }
             return null;
+        }
+
+        /// <summary>
+        /// Dummy method để tránh lỗi biên dịch từ FrmChotSoCa cũ
+        /// </summary>
+        public static (decimal TongDoanhThu, decimal TienMat, decimal ChuyenKhoan, int TongHoaDon) GetShiftFinancialSummary(int maNhanVien, DateTime thoiGianVaoCa)
+        {
+            return (0, 0, 0, 0);
         }
     }
 }
