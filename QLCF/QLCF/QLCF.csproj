@@ -165,6 +165,7 @@
     <Compile Include="Helpers\ExcelExportService.cs" />
     <Compile Include="Helpers\ImageHelper.cs" />
     <Compile Include="Helpers\PasswordHelper.cs" />
+    <Compile Include="Helpers\ShiftService.cs" />
     <Compile Include="Helpers\UITheme.cs" />
     <Compile Include="Models\BanModel.cs" />
     <Compile Include="Models\UserSession.cs" />

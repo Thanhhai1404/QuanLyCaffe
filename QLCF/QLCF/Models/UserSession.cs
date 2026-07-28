@@ -1,4 +1,4 @@
-﻿namespace QLCF.Models
+namespace QLCF.Models
 {
     public static class UserSession
     {
@@ -10,6 +10,9 @@
 
         // Vai trò: Admin hoặc NhanVien
         public static string ChucVu { get; set; }
+
+        // Shift ID hiện tại (khi nhân viên vào ca)
+        public static int CurrentShiftId { get; set; }
 
         // Kiểm tra nhanh có phải Admin không
         public static bool IsAdmin
@@ -23,6 +26,7 @@
             MaNV = 0;
             HoTen = "";
             ChucVu = "";
+            CurrentShiftId = 0;
         }
     }
 }
