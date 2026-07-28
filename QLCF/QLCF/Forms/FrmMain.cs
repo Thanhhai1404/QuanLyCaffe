@@ -27,7 +27,7 @@ namespace QLCF.Forms
             this.btnMonAn.Click += btnMonAn_Click;
             this.btnDanhMuc.Click += btnDanhMuc_Click;
             this.btnKhuVucBan.Click += btnKhuVucBan_Click;
-            this.btnNhanVien.Click += btnMenu_Click;
+            this.btnNhanVien.Click += btnNhanVien_Click;
             this.btnHoaDon.Click += btnHoaDon_Click;
             this.btnThongKe.Click += btnThongKe_Click;
             this.btnDoiMatKhau.Click += btnDoiMatKhau_Click;
@@ -330,18 +330,19 @@ namespace QLCF.Forms
             HienThiNoiDung(frmKhuVuc);
         }
 
-        private void btnMenu_Click(object sender, EventArgs e)
+        private void btnNhanVien_Click(object sender, EventArgs e)
+        {
+            MoQuanLyNhanVien();
+        }
+
+        public void MoQuanLyNhanVien()
         {
             if (!KiemTraQuyenAdmin()) return;
 
             CapNhatMenuDangChon(btnNhanVien);
 
-            MessageBox.Show(
-                "Chức năng này sẽ được xây dựng ở bước tiếp theo.",
-                "Thông báo",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information
-            );
+            FrmQuanLyNhanVien frmNhanVien = new FrmQuanLyNhanVien();
+            HienThiNoiDung(frmNhanVien);
         }
     }
 }
