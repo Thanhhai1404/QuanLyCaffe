@@ -57,6 +57,8 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -160,6 +162,7 @@
     <Compile Include="Forms\StaffWelcomeControl.Designer.cs">
       <DependentUpon>StaffWelcomeControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\ExcelExportService.cs" />
     <Compile Include="Helpers\ImageHelper.cs" />
     <Compile Include="Helpers\PasswordHelper.cs" />
     <Compile Include="Helpers\UITheme.cs" />

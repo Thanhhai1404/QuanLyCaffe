@@ -226,5 +226,89 @@ namespace QLCF.Forms
                 MainForm.MoQuanLyMonAn();
             }
         }
+
+        private async void btnXuatExcel_Click(object sender, EventArgs e)
+        {
+            DateTime tuNgay = dtpTuNgay.Value.Date;
+            DateTime denNgay = dtpDenNgay.Value.Date;
+
+            if (tuNgay > denNgay)
+            {
+                MessageBox.Show(
+                    "Từ ngày không được lớn hơn Đến ngày.",
+                    "Cảnh báo",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+                return;
+            }
+
+            using (SaveFileDialog sfd = new SaveFileDialog())
+            {
+                sfd.FileName = $"BaoCaoThongKe_{DateTime.Now:yyyyMMdd}_{DateTime.Now:HHmm}.xlsx";
+                sfd.Filter = "Excel Workbook (*.xlsx)|*.xlsx";
+                sfd.Title = "Chọn vị trí lưu file Báo Cáo Excel";
+
+                if (sfd.ShowDialog() != DialogResult.OK)
+                {
+                    return;
+                }
+
+                string filePath = sfd.FileName;
+
+                btnXuatExcel.Enabled = false;
+                string originalText = btnXuatExcel.Text;
+                btnXuatExcel.Text = "⏳ Đang tạo...";
+                this.Cursor = Cursors.WaitCursor;
+
+                try
+                {
+                    bool success = await System.Threading.Tasks.Task.Run(() => ExcelExportService.ExportReport(filePath, tuNgay, denNgay));
+
+                    if (success)
+                    {
+                        DialogResult confirm = MessageBox.Show(
+                            "Xuất file Excel thành công! Bạn có muốn mở file ngay không?",
+                            "Thành công",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Information
+                        );
+
+                        if (confirm == DialogResult.Yes)
+                        {
+                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                            {
+                                FileName = filePath,
+                                UseShellExecute = true
+                            });
+                        }
+                    }
+                }
+                catch (System.IO.IOException)
+                {
+                    MessageBox.Show(
+                        "Không thể ghi đè file do file đang mở trong một ứng dụng khác.\nVui lòng đóng file và thử lại.",
+                        "Lỗi thao tác File",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        "Đã xảy ra lỗi khi xuất file Excel:\n" + ex.Message,
+                        "Lỗi hệ thống",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
+                }
+                finally
+                {
+                    btnXuatExcel.Text = originalText;
+                    btnXuatExcel.Enabled = true;
+                    this.Cursor = Cursors.Default;
+                }
+            }
+        }
     }
 }

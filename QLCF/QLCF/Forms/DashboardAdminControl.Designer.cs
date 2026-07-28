@@ -35,6 +35,7 @@ namespace QLCF.Forms
             this.lblDenNgay = new System.Windows.Forms.Label();
             this.dtpDenNgay = new System.Windows.Forms.DateTimePicker();
             this.btnTaiLaiDashboard = new System.Windows.Forms.Button();
+            this.btnXuatExcel = new System.Windows.Forms.Button();
             this.lblSubTitle = new System.Windows.Forms.Label();
             this.lblTitle = new System.Windows.Forms.Label();
             this.pnlCardsContainer = new System.Windows.Forms.TableLayoutPanel();
@@ -118,9 +119,10 @@ namespace QLCF.Forms
             this.pnlFilter.Controls.Add(this.lblDenNgay);
             this.pnlFilter.Controls.Add(this.dtpDenNgay);
             this.pnlFilter.Controls.Add(this.btnTaiLaiDashboard);
-            this.pnlFilter.Location = new System.Drawing.Point(400, 8);
+            this.pnlFilter.Controls.Add(this.btnXuatExcel);
+            this.pnlFilter.Location = new System.Drawing.Point(260, 8);
             this.pnlFilter.Name = "pnlFilter";
-            this.pnlFilter.Size = new System.Drawing.Size(530, 42);
+            this.pnlFilter.Size = new System.Drawing.Size(670, 42);
             this.pnlFilter.TabIndex = 2;
             // 
             // lblTuNgay
@@ -184,6 +186,23 @@ namespace QLCF.Forms
             this.btnTaiLaiDashboard.TabIndex = 4;
             this.btnTaiLaiDashboard.Text = "Cập nhật";
             this.btnTaiLaiDashboard.UseVisualStyleBackColor = false;
+            // 
+            // btnXuatExcel
+            // 
+            this.btnXuatExcel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(22)))), ((int)(((byte)(163)))), ((int)(((byte)(74)))));
+            this.btnXuatExcel.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnXuatExcel.FlatAppearance.BorderSize = 0;
+            this.btnXuatExcel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnXuatExcel.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnXuatExcel.ForeColor = System.Drawing.Color.White;
+            this.btnXuatExcel.Location = new System.Drawing.Point(530, 3);
+            this.btnXuatExcel.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.btnXuatExcel.Name = "btnXuatExcel";
+            this.btnXuatExcel.Size = new System.Drawing.Size(120, 32);
+            this.btnXuatExcel.TabIndex = 5;
+            this.btnXuatExcel.Text = "📊 Xuất Excel";
+            this.btnXuatExcel.UseVisualStyleBackColor = false;
+            this.btnXuatExcel.Click += new System.EventHandler(this.btnXuatExcel_Click);
             // 
             // lblSubTitle
             // 
@@ -798,6 +817,7 @@ namespace QLCF.Forms
         private System.Windows.Forms.Panel pnlCard1;
         private System.Windows.Forms.Panel pnlCard1Accent;
         private System.Windows.Forms.Label lblCard1Title;
+        private System.Windows.Forms.Button btnXuatExcel;
         private System.Windows.Forms.Label lblDoanhThuVal;
         private System.Windows.Forms.Panel pnlCard2;
         private System.Windows.Forms.Panel pnlCard2Accent;

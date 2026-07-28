@@ -90,6 +90,7 @@ namespace QLCF.Forms
             // 
             this.pnlFilter.BackColor = System.Drawing.Color.White;
             this.pnlFilter.Controls.Add(this.btnDong);
+            this.pnlFilter.Controls.Add(this.btnXuatExcel);
             this.pnlFilter.Controls.Add(this.btnXemThongKe);
             this.pnlFilter.Controls.Add(this.dtpDenNgay);
             this.pnlFilter.Controls.Add(this.lblDenNgay);
@@ -109,12 +110,28 @@ namespace QLCF.Forms
             this.btnXemThongKe.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnXemThongKe.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnXemThongKe.ForeColor = System.Drawing.Color.White;
-            this.btnXemThongKe.Location = new System.Drawing.Point(540, 15);
+            this.btnXemThongKe.Location = new System.Drawing.Point(525, 15);
             this.btnXemThongKe.Name = "btnXemThongKe";
-            this.btnXemThongKe.Size = new System.Drawing.Size(140, 35);
+            this.btnXemThongKe.Size = new System.Drawing.Size(135, 35);
             this.btnXemThongKe.TabIndex = 4;
             this.btnXemThongKe.Text = "🔍 Xem thống kê";
             this.btnXemThongKe.UseVisualStyleBackColor = false;
+            // 
+            // btnXuatExcel
+            // 
+            this.btnXuatExcel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(22)))), ((int)(((byte)(163)))), ((int)(((byte)(74)))));
+            this.btnXuatExcel.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnXuatExcel.FlatAppearance.BorderSize = 0;
+            this.btnXuatExcel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnXuatExcel.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnXuatExcel.ForeColor = System.Drawing.Color.White;
+            this.btnXuatExcel.Location = new System.Drawing.Point(670, 15);
+            this.btnXuatExcel.Name = "btnXuatExcel";
+            this.btnXuatExcel.Size = new System.Drawing.Size(140, 35);
+            this.btnXuatExcel.TabIndex = 6;
+            this.btnXuatExcel.Text = "📊 Xuất Excel";
+            this.btnXuatExcel.UseVisualStyleBackColor = false;
+            this.btnXuatExcel.Click += new System.EventHandler(this.btnXuatExcel_Click);
             // 
             // dtpDenNgay
             // 
@@ -358,9 +375,9 @@ namespace QLCF.Forms
             this.btnDong.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnDong.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnDong.ForeColor = System.Drawing.Color.White;
-            this.btnDong.Location = new System.Drawing.Point(820, 15);
+            this.btnDong.Location = new System.Drawing.Point(830, 15);
             this.btnDong.Name = "btnDong";
-            this.btnDong.Size = new System.Drawing.Size(110, 35);
+            this.btnDong.Size = new System.Drawing.Size(100, 35);
             this.btnDong.TabIndex = 5;
             this.btnDong.Text = "❌ Đóng";
             this.btnDong.UseVisualStyleBackColor = false;
@@ -402,6 +419,7 @@ namespace QLCF.Forms
         private System.Windows.Forms.Label lblDenNgay;
         private System.Windows.Forms.DateTimePicker dtpDenNgay;
         private System.Windows.Forms.Button btnXemThongKe;
+        private System.Windows.Forms.Button btnXuatExcel;
         private System.Windows.Forms.Button btnDong;
         private System.Windows.Forms.Panel pnlCards;
         private System.Windows.Forms.Panel pnlCardDoanhThu;
