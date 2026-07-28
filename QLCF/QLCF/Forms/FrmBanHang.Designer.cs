@@ -42,6 +42,11 @@ namespace QLCF.Forms
             this.cboKhuVuc = new System.Windows.Forms.ComboBox();
             this.btnLamMoi = new System.Windows.Forms.Button();
             this.btnDong = new System.Windows.Forms.Button();
+            this.pnlShiftHeader = new System.Windows.Forms.Panel();
+            this.lblActiveShiftBadge = new System.Windows.Forms.Label();
+            this.lblShiftInfo = new System.Windows.Forms.Label();
+            this.btnKetCaTopBar = new System.Windows.Forms.Button();
+            this.shiftTimer = new System.Windows.Forms.Timer();
             this.flpSoDoBan = new System.Windows.Forms.FlowLayoutPanel();
             this.pnlMiddle = new System.Windows.Forms.Panel();
             this.flpMonAn = new System.Windows.Forms.FlowLayoutPanel();
@@ -82,6 +87,7 @@ namespace QLCF.Forms
             this.lblKhuVucDangChon = new System.Windows.Forms.Label();
             this.lblTenBanDangChon = new System.Windows.Forms.Label();
             this.pnlHeader.SuspendLayout();
+            this.pnlShiftHeader.SuspendLayout();
             this.pnlMiddle.SuspendLayout();
             this.pnlTimKiem.SuspendLayout();
             this.pnlRightContainer.SuspendLayout();
@@ -172,16 +178,66 @@ namespace QLCF.Forms
             this.btnDong.Text = "❌ Đóng";
             this.btnDong.UseVisualStyleBackColor = false;
             // 
+            // pnlShiftHeader
+            // 
+            this.pnlShiftHeader.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(41)))), ((int)(((byte)(59)))));
+            this.pnlShiftHeader.Controls.Add(this.btnKetCaTopBar);
+            this.pnlShiftHeader.Controls.Add(this.lblShiftInfo);
+            this.pnlShiftHeader.Controls.Add(this.lblActiveShiftBadge);
+            this.pnlShiftHeader.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlShiftHeader.Location = new System.Drawing.Point(0, 58);
+            this.pnlShiftHeader.Name = "pnlShiftHeader";
+            this.pnlShiftHeader.Size = new System.Drawing.Size(1300, 45);
+            this.pnlShiftHeader.TabIndex = 4;
+            // 
+            // lblActiveShiftBadge
+            // 
+            this.lblActiveShiftBadge.AutoSize = true;
+            this.lblActiveShiftBadge.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblActiveShiftBadge.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(16)))), ((int)(((byte)(185)))), ((int)(((byte)(129)))));
+            this.lblActiveShiftBadge.Location = new System.Drawing.Point(18, 12);
+            this.lblActiveShiftBadge.Name = "lblActiveShiftBadge";
+            this.lblActiveShiftBadge.Size = new System.Drawing.Size(155, 21);
+            this.lblActiveShiftBadge.TabIndex = 0;
+            this.lblActiveShiftBadge.Text = "🟢 Đang trong ca làm";
+            // 
+            // lblShiftInfo
+            // 
+            this.lblShiftInfo.AutoSize = true;
+            this.lblShiftInfo.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblShiftInfo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(226)))), ((int)(((byte)(232)))), ((int)(((byte)(240)))));
+            this.lblShiftInfo.Location = new System.Drawing.Point(200, 12);
+            this.lblShiftInfo.Name = "lblShiftInfo";
+            this.lblShiftInfo.Size = new System.Drawing.Size(262, 21);
+            this.lblShiftInfo.TabIndex = 1;
+            this.lblShiftInfo.Text = "Thời gian vào ca: -- | Đã làm: --";
+            // 
+            // btnKetCaTopBar
+            // 
+            this.btnKetCaTopBar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnKetCaTopBar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(38)))), ((int)(((byte)(38)))));
+            this.btnKetCaTopBar.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnKetCaTopBar.FlatAppearance.BorderSize = 0;
+            this.btnKetCaTopBar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnKetCaTopBar.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnKetCaTopBar.ForeColor = System.Drawing.Color.White;
+            this.btnKetCaTopBar.Location = new System.Drawing.Point(1110, 6);
+            this.btnKetCaTopBar.Name = "btnKetCaTopBar";
+            this.btnKetCaTopBar.Size = new System.Drawing.Size(170, 33);
+            this.btnKetCaTopBar.TabIndex = 2;
+            this.btnKetCaTopBar.Text = "🔴 Kết Ca && Chốt Sổ";
+            this.btnKetCaTopBar.UseVisualStyleBackColor = false;
+            // 
             // flpSoDoBan
             // 
             this.flpSoDoBan.AutoScroll = true;
             this.flpSoDoBan.BackColor = System.Drawing.Color.White;
             this.flpSoDoBan.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.flpSoDoBan.Dock = System.Windows.Forms.DockStyle.Left;
-            this.flpSoDoBan.Location = new System.Drawing.Point(0, 58);
+            this.flpSoDoBan.Location = new System.Drawing.Point(0, 103);
             this.flpSoDoBan.Name = "flpSoDoBan";
             this.flpSoDoBan.Padding = new System.Windows.Forms.Padding(6);
-            this.flpSoDoBan.Size = new System.Drawing.Size(275, 692);
+            this.flpSoDoBan.Size = new System.Drawing.Size(275, 647);
             this.flpSoDoBan.TabIndex = 1;
             // 
             // pnlRightContainer
@@ -192,10 +248,10 @@ namespace QLCF.Forms
             this.pnlRightContainer.Controls.Add(this.pnlThemMonAction);
             this.pnlRightContainer.Controls.Add(this.pnlThongTinBanHeader);
             this.pnlRightContainer.Dock = System.Windows.Forms.DockStyle.Right;
-            this.pnlRightContainer.Location = new System.Drawing.Point(820, 58);
+            this.pnlRightContainer.Location = new System.Drawing.Point(820, 103);
             this.pnlRightContainer.Name = "pnlRightContainer";
             this.pnlRightContainer.Padding = new System.Windows.Forms.Padding(8);
-            this.pnlRightContainer.Size = new System.Drawing.Size(480, 692);
+            this.pnlRightContainer.Size = new System.Drawing.Size(480, 647);
             this.pnlRightContainer.TabIndex = 3;
             // 
             // dgvChiTietHoaDon
@@ -667,9 +723,9 @@ namespace QLCF.Forms
             this.pnlMiddle.Controls.Add(this.flpDanhMuc);
             this.pnlMiddle.Controls.Add(this.pnlTimKiem);
             this.pnlMiddle.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnlMiddle.Location = new System.Drawing.Point(255, 58);
+            this.pnlMiddle.Location = new System.Drawing.Point(255, 103);
             this.pnlMiddle.Name = "pnlMiddle";
-            this.pnlMiddle.Size = new System.Drawing.Size(585, 692);
+            this.pnlMiddle.Size = new System.Drawing.Size(585, 647);
             this.pnlMiddle.TabIndex = 2;
             // 
             // flpMonAn
@@ -752,6 +808,7 @@ namespace QLCF.Forms
             this.Controls.Add(this.pnlMiddle);
             this.Controls.Add(this.pnlRightContainer);
             this.Controls.Add(this.flpSoDoBan);
+            this.Controls.Add(this.pnlShiftHeader);
             this.Controls.Add(this.pnlHeader);
             this.Name = "FrmBanHang";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -759,6 +816,8 @@ namespace QLCF.Forms
             this.WindowState = System.Windows.Forms.FormWindowState.Normal;
             this.pnlHeader.ResumeLayout(false);
             this.pnlHeader.PerformLayout();
+            this.pnlShiftHeader.ResumeLayout(false);
+            this.pnlShiftHeader.PerformLayout();
             this.pnlMiddle.ResumeLayout(false);
             this.pnlTimKiem.ResumeLayout(false);
             this.pnlTimKiem.PerformLayout();
@@ -798,6 +857,11 @@ namespace QLCF.Forms
         private System.Windows.Forms.Label lblGioVao;
         private System.Windows.Forms.Label lblMaHoaDonMo;
         private System.Windows.Forms.Label lblHuongDan;
+        private System.Windows.Forms.Panel pnlShiftHeader;
+        private System.Windows.Forms.Label lblActiveShiftBadge;
+        private System.Windows.Forms.Label lblShiftInfo;
+        private System.Windows.Forms.Button btnKetCaTopBar;
+        private System.Windows.Forms.Timer shiftTimer;
         private System.Windows.Forms.DataGridView dgvChiTietHoaDon;
         private System.Windows.Forms.Panel pnlThemMonAction;
         private System.Windows.Forms.Label lblMonDangChon;

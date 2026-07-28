@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using QLCF.Data;
 using QLCF.Helpers;
 using QLCF.Models;
+using System.Threading.Tasks;
 
 namespace QLCF.Forms
 {
@@ -38,6 +39,11 @@ namespace QLCF.Forms
             this.btnResetMatKhau.Click += (s, e) => ResetMatKhau();
             this.btnLamMoiFormNhanVien.Click += (s, e) => LamMoiForm();
             this.chkHienMatKhauKhoiTao.CheckedChanged += (s, e) => txtMatKhauKhoiTao.UseSystemPasswordChar = !chkHienMatKhauKhoiTao.Checked;
+            
+            // Gán sự kiện tab Quản lý Giờ làm
+            this.btnLocGioLam.Click += BtnLocGioLam_Click;
+            this.btnXuatExcelGioLam.Click += BtnXuatExcelGioLam_Click;
+            this.txtTimKiemGioLam.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) LoadDataGioLam(); };
         }
 
         private void FrmQuanLyNhanVien_Load(object sender, EventArgs e)
@@ -47,6 +53,11 @@ namespace QLCF.Forms
             InitComboBoxes();
             LamMoiForm();
             LoadNhanVien();
+
+            // Khởi tạo tab Giờ làm
+            dtpTuNgay.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            dtpDenNgay.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month));
+            LoadDataGioLam();
         }
 
         public bool KiemTraQuyenAdmin()
@@ -584,5 +595,105 @@ namespace QLCF.Forms
                 }
             }
         }
+
+        #region 7. QUẢN LÝ GIỜ LÀM VÀ BÁO CÁO LƯƠNG
+
+        private void LoadDataGioLam()
+        {
+            try
+            {
+                using (SqlConnection conn = Db.CreateConnection())
+                {
+                    conn.Open();
+                    string query = @"
+                        SELECT 
+                            nv.MaNV AS MaNhanVien,
+                            nv.HoTen AS TenNhanVien,
+                            COUNT(dd.MaDiemDanh) AS TongSoCa,
+                            ISNULL(SUM(dd.TongGioLam), 0) AS TongGioLam,
+                            MIN(dd.ThoiGianVaoCa) AS CaDauTien,
+                            MAX(dd.ThoiGianKetCa) AS CaCuoiCung
+                        FROM NhanVien nv
+                        LEFT JOIN BangDiemDanh dd ON nv.MaNV = dd.MaNhanVien 
+                            AND dd.ThoiGianVaoCa >= @TuNgay 
+                            AND dd.ThoiGianVaoCa <= @DenNgay 
+                            AND dd.ThoiGianKetCa IS NOT NULL
+                        WHERE nv.TrangThai = 1
+                          AND (@TimKiem = '' OR nv.HoTen LIKE '%' + @TimKiem + '%')
+                        GROUP BY nv.MaNV, nv.HoTen
+                        ORDER BY TongGioLam DESC;
+                    ";
+
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.Add("@TuNgay", SqlDbType.DateTime).Value = dtpTuNgay.Value.Date;
+                        cmd.Parameters.Add("@DenNgay", SqlDbType.DateTime).Value = dtpDenNgay.Value.Date.AddDays(1).AddTicks(-1);
+                        cmd.Parameters.Add("@TimKiem", SqlDbType.NVarChar).Value = txtTimKiemGioLam.Text.Trim();
+
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                        {
+                            DataTable dtGioLam = new DataTable();
+                            da.Fill(dtGioLam);
+                            dgvGioLam.AutoGenerateColumns = false;
+                            dgvGioLam.DataSource = dtGioLam;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi tải dữ liệu giờ làm: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void BtnLocGioLam_Click(object sender, EventArgs e)
+        {
+            LoadDataGioLam();
+        }
+
+        private async void BtnXuatExcelGioLam_Click(object sender, EventArgs e)
+        {
+            if (dgvGioLam.Rows.Count == 0)
+            {
+                MessageBox.Show("Không có dữ liệu để xuất Excel.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            using (SaveFileDialog sfd = new SaveFileDialog { Filter = "Excel Workbook (*.xlsx)|*.xlsx", FileName = $"BaoCaoGioLam_NV_{dtpTuNgay.Value:yyyyMMdd}_{dtpDenNgay.Value:yyyyMMdd}.xlsx" })
+            {
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        btnXuatExcelGioLam.Enabled = false;
+                        btnXuatExcelGioLam.Text = "Đang xuất...";
+                        this.Cursor = Cursors.WaitCursor;
+
+                        // Gọi service xuất Excel
+                        bool success = await Task.Run(() =>
+                            ExcelExportService.ExportPayrollReport(sfd.FileName, dtpTuNgay.Value, dtpDenNgay.Value, txtTimKiemGioLam.Text.Trim())
+                        );
+
+                        this.Cursor = Cursors.Default;
+                        btnXuatExcelGioLam.Enabled = true;
+                        btnXuatExcelGioLam.Text = "📊 Xuất Excel Báo Cáo Lương";
+
+                        if (success && MessageBox.Show("Xuất Báo cáo Giờ làm / Lương Excel thành công! Bạn có muốn mở file ngay?", "Thông báo", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                        {
+                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = sfd.FileName, UseShellExecute = true });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        this.Cursor = Cursors.Default;
+                        btnXuatExcelGioLam.Enabled = true;
+                        btnXuatExcelGioLam.Text = "📊 Xuất Excel Báo Cáo Lương";
+                        MessageBox.Show("Lỗi khi xuất file Excel: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+
+        #endregion
     }
 }

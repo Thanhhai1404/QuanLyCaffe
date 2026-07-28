@@ -511,6 +511,170 @@ namespace QLCF.Helpers
             return sb.ToString();
         }
 
+        public static bool ExportPayrollReport(string filePath, DateTime fromDate, DateTime toDate, string keyword)
+        {
+            DataTable payrollData = new DataTable();
+            try
+            {
+                using (var conn = QLCF.Data.Db.CreateConnection())
+                {
+                    conn.Open();
+                    string query = @"
+                        SELECT 
+                            nv.MaNV AS MaNhanVien,
+                            nv.HoTen AS TenNhanVien,
+                            COUNT(dd.MaDiemDanh) AS TongSoCa,
+                            ISNULL(SUM(dd.TongGioLam), 0) AS TongGioLam
+                        FROM NhanVien nv
+                        LEFT JOIN BangDiemDanh dd ON nv.MaNV = dd.MaNhanVien 
+                            AND dd.ThoiGianVaoCa >= @TuNgay 
+                            AND dd.ThoiGianVaoCa <= @DenNgay 
+                            AND dd.ThoiGianKetCa IS NOT NULL
+                        WHERE nv.TrangThai = 1
+                          AND (@TimKiem = '' OR nv.HoTen LIKE '%' + @TimKiem + '%')
+                        GROUP BY nv.MaNV, nv.HoTen
+                        ORDER BY TongGioLam DESC;
+                    ";
+
+                    using (var cmd = new System.Data.SqlClient.SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.Add("@TuNgay", SqlDbType.DateTime).Value = fromDate.Date;
+                        cmd.Parameters.Add("@DenNgay", SqlDbType.DateTime).Value = toDate.Date.AddDays(1).AddTicks(-1);
+                        cmd.Parameters.Add("@TimKiem", SqlDbType.NVarChar).Value = keyword;
+
+                        using (var adapter = new System.Data.SqlClient.SqlDataAdapter(cmd))
+                        {
+                            adapter.Fill(payrollData);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("ExportPayrollReport db fetch error: " + ex.Message);
+                return false;
+            }
+
+            GeneratePayrollExcelFile(filePath, payrollData, fromDate, toDate);
+            return true;
+        }
+
+        private static void GeneratePayrollExcelFile(string filePath, DataTable payrollData, DateTime fromDate, DateTime toDate)
+        {
+            if (File.Exists(filePath)) File.Delete(filePath);
+
+            using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                using (ZipArchive zip = new ZipArchive(fs, ZipArchiveMode.Create, true))
+                {
+                    CreateZipEntry(zip, "[Content_Types].xml", GetContentTypesXml());
+                    CreateZipEntry(zip, "_rels/.rels", GetRelsXml());
+                    CreateZipEntry(zip, "xl/_rels/workbook.xml.rels", GetWorkbookRelsXml());
+                    CreateZipEntry(zip, "xl/workbook.xml", GetWorkbookXml());
+                    CreateZipEntry(zip, "xl/styles.xml", GetStylesXml());
+                    CreateZipEntry(zip, "xl/worksheets/sheet1.xml", BuildPayrollWorksheetXml(payrollData, fromDate, toDate));
+                }
+            }
+        }
+
+        private static string BuildPayrollWorksheetXml(DataTable dt, DateTime fromDate, DateTime toDate)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
+            sb.AppendLine("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">");
+            
+            sb.AppendLine("  <cols>");
+            sb.AppendLine("    <col min=\"1\" max=\"1\" width=\"8\" customWidth=\"1\"/>");
+            sb.AppendLine("    <col min=\"2\" max=\"2\" width=\"15\" customWidth=\"1\"/>");
+            sb.AppendLine("    <col min=\"3\" max=\"3\" width=\"30\" customWidth=\"1\"/>");
+            sb.AppendLine("    <col min=\"4\" max=\"4\" width=\"15\" customWidth=\"1\"/>");
+            sb.AppendLine("    <col min=\"5\" max=\"5\" width=\"18\" customWidth=\"1\"/>");
+            sb.AppendLine("    <col min=\"6\" max=\"6\" width=\"20\" customWidth=\"1\"/>");
+            sb.AppendLine("    <col min=\"7\" max=\"7\" width=\"25\" customWidth=\"1\"/>");
+            sb.AppendLine("  </cols>");
+            
+            sb.AppendLine("  <sheetData>");
+            
+            sb.AppendLine("    <row r=\"1\" ht=\"20\">");
+            sb.AppendLine(CreateStringCell("A1", "HỆ THỐNG QUẢN LÝ QUÁN CAFÉ - QLCF", 1));
+            sb.AppendLine("    </row>");
+            
+            sb.AppendLine("    <row r=\"2\" ht=\"30\">");
+            sb.AppendLine(CreateStringCell("A2", "BẢNG THỐNG KÊ GIỜ LÀM VÀ DỰ TÍNH LƯƠNG NHÂN VIÊN", 2));
+            sb.AppendLine("    </row>");
+            
+            sb.AppendLine("    <row r=\"3\" ht=\"20\">");
+            sb.AppendLine(CreateStringCell("A3", $"Kỳ báo cáo: Từ {fromDate:dd/MM/yyyy} đến {toDate:dd/MM/yyyy} | Ngày xuất: {DateTime.Now:dd/MM/yyyy HH:mm}", 3));
+            sb.AppendLine("    </row>");
+            
+            sb.AppendLine("    <row r=\"4\" ht=\"15\"></row>");
+            
+            sb.AppendLine("    <row r=\"5\" ht=\"25\">");
+            sb.AppendLine(CreateStringCell("A5", "STT", 7));
+            sb.AppendLine(CreateStringCell("B5", "Mã NV", 7));
+            sb.AppendLine(CreateStringCell("C5", "Họ và Tên", 7));
+            sb.AppendLine(CreateStringCell("D5", "Số Ca Làm", 7));
+            sb.AppendLine(CreateStringCell("E5", "Tổng Giờ Làm", 7));
+            sb.AppendLine(CreateStringCell("F5", "Mức Lương/Giờ", 7));
+            sb.AppendLine(CreateStringCell("G5", "Tổng Lương Thực Nhận", 7));
+            sb.AppendLine("    </row>");
+            
+            int currentRow = 6;
+            int count = 1;
+            int startRow = currentRow;
+            
+            foreach (DataRow row in dt.Rows)
+            {
+                string maNV = row["MaNhanVien"].ToString();
+                string tenNV = row["TenNhanVien"].ToString();
+                double soCa = Convert.ToDouble(row["TongSoCa"]);
+                double tongGio = Convert.ToDouble(row["TongGioLam"]);
+                
+                bool isOdd = (count % 2 != 0);
+                int styleCenter = isOdd ? 20 : 19;
+                int styleText = isOdd ? 9 : 8;
+                int styleNumber = isOdd ? 11 : 10;
+                int styleCurr = isOdd ? 13 : 12; 
+                
+                sb.AppendLine($"    <row r=\"{currentRow}\" ht=\"22\">");
+                sb.AppendLine(CreateNumberCell($"A{currentRow}", count, styleCenter));
+                sb.AppendLine(CreateStringCell($"B{currentRow}", maNV, styleCenter));
+                sb.AppendLine(CreateStringCell($"C{currentRow}", tenNV, styleText));
+                sb.AppendLine(CreateNumberCell($"D{currentRow}", soCa, styleCenter));
+                sb.AppendLine(CreateNumberCell($"E{currentRow}", tongGio, styleNumber)); 
+                sb.AppendLine(CreateNumberCell($"F{currentRow}", 25000, styleCurr)); 
+                sb.AppendLine(CreateFormulaCell($"G{currentRow}", $"E{currentRow}*F{currentRow}", styleCurr)); 
+                sb.AppendLine("    </row>");
+                
+                currentRow++;
+                count++;
+            }
+            
+            int endRow = (currentRow > startRow) ? currentRow - 1 : startRow;
+            
+            sb.AppendLine($"    <row r=\"{currentRow}\" ht=\"25\">");
+            sb.AppendLine(CreateStringCell($"A{currentRow}", "TỔNG CỘNG", 16));
+            sb.AppendLine(CreateStringCell($"B{currentRow}", "", 16));
+            sb.AppendLine(CreateStringCell($"C{currentRow}", "", 16));
+            sb.AppendLine(CreateFormulaCell($"D{currentRow}", $"SUM(D{startRow}:D{endRow})", 16));
+            sb.AppendLine(CreateFormulaCell($"E{currentRow}", $"SUM(E{startRow}:E{endRow})", 16));
+            sb.AppendLine(CreateStringCell($"F{currentRow}", "", 16));
+            sb.AppendLine(CreateFormulaCell($"G{currentRow}", $"SUM(G{startRow}:G{endRow})", 18));
+            sb.AppendLine("    </row>");
+            
+            sb.AppendLine("  </sheetData>");
+            
+            sb.AppendLine("  <mergeCells count=\"4\">");
+            sb.AppendLine("    <mergeCell ref=\"A1:G1\"/>");
+            sb.AppendLine("    <mergeCell ref=\"A2:G2\"/>");
+            sb.AppendLine("    <mergeCell ref=\"A3:G3\"/>");
+            sb.AppendLine($"    <mergeCell ref=\"A{currentRow}:C{currentRow}\"/>");
+            sb.AppendLine("  </mergeCells>");
+            
+            sb.AppendLine("</worksheet>");
+            return sb.ToString();
+        }
+
         private static string CreateStringCell(string cellRef, string text, int styleIndex)
         {
             string safeText = System.Security.SecurityElement.Escape(text ?? "");

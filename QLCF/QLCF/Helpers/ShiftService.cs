@@ -158,5 +158,34 @@ namespace QLCF.Helpers
             }
             return false;
         }
+
+        /// <summary>
+        /// Lấy thời gian bắt đầu của một ca làm việc
+        /// </summary>
+        public static DateTime? GetShiftCheckInTime(int shiftId)
+        {
+            try
+            {
+                using (var conn = Db.CreateConnection())
+                {
+                    conn.Open();
+                    string sql = "SELECT ThoiGianVaoCa FROM BangDiemDanh WHERE MaDiemDanh = @ShiftId";
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@ShiftId", shiftId);
+                        var result = cmd.ExecuteScalar();
+                        if (result != null && result != DBNull.Value)
+                        {
+                            return Convert.ToDateTime(result);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("GetShiftCheckInTime Error: " + ex.Message);
+            }
+            return null;
+        }
     }
 }

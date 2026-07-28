@@ -73,6 +73,27 @@ namespace QLCF.Forms
             this.btnKhoaMoTaiKhoan = new System.Windows.Forms.Button();
             this.btnSuaNhanVien = new System.Windows.Forms.Button();
             this.btnThemNhanVien = new System.Windows.Forms.Button();
+
+            // Khởi tạo các Control cho Tab Quản lý giờ làm
+            this.tabControlMain = new System.Windows.Forms.TabControl();
+            this.tabDanhSachNhanVien = new System.Windows.Forms.TabPage();
+            this.tabGioLamBaoCao = new System.Windows.Forms.TabPage();
+            this.pnlFilterGioLam = new System.Windows.Forms.Panel();
+            this.lblTuNgay = new System.Windows.Forms.Label();
+            this.dtpTuNgay = new System.Windows.Forms.DateTimePicker();
+            this.lblDenNgay = new System.Windows.Forms.Label();
+            this.dtpDenNgay = new System.Windows.Forms.DateTimePicker();
+            this.txtTimKiemGioLam = new System.Windows.Forms.TextBox();
+            this.btnLocGioLam = new System.Windows.Forms.Button();
+            this.btnXuatExcelGioLam = new System.Windows.Forms.Button();
+            this.dgvGioLam = new System.Windows.Forms.DataGridView();
+            this.colGioLamMaNV = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colGioLamTenNV = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colGioLamTongSoCa = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colGioLamTongGioLam = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colGioLamCaDauTien = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colGioLamCaCuoiCung = new System.Windows.Forms.DataGridViewTextBoxColumn();
+
             this.pnlHeaderTitle.SuspendLayout();
             this.pnlFilter.SuspendLayout();
             this.pnlMain.SuspendLayout();
@@ -80,6 +101,11 @@ namespace QLCF.Forms
             ((System.ComponentModel.ISupportInitialize)(this.dgvNhanVien)).BeginInit();
             this.pnlDetail.SuspendLayout();
             this.pnlActionButtons.SuspendLayout();
+            this.tabControlMain.SuspendLayout();
+            this.tabDanhSachNhanVien.SuspendLayout();
+            this.tabGioLamBaoCao.SuspendLayout();
+            this.pnlFilterGioLam.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvGioLam)).BeginInit();
             this.SuspendLayout();
             // 
             // pnlHeaderTitle
@@ -585,14 +611,215 @@ namespace QLCF.Forms
             this.btnThemNhanVien.Text = "➕ Thêm nhân viên mới";
             this.btnThemNhanVien.UseVisualStyleBackColor = false;
             // 
+            // tabControlMain
+            // 
+            this.tabControlMain.Controls.Add(this.tabDanhSachNhanVien);
+            this.tabControlMain.Controls.Add(this.tabGioLamBaoCao);
+            this.tabControlMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControlMain.Font = new System.Drawing.Font("Segoe UI", 9.5F);
+            this.tabControlMain.Location = new System.Drawing.Point(0, 48);
+            this.tabControlMain.Name = "tabControlMain";
+            this.tabControlMain.SelectedIndex = 0;
+            this.tabControlMain.Size = new System.Drawing.Size(1100, 602);
+            this.tabControlMain.TabIndex = 1;
+            // 
+            // tabDanhSachNhanVien
+            // 
+            this.tabDanhSachNhanVien.Controls.Add(this.pnlMain);
+            this.tabDanhSachNhanVien.Controls.Add(this.pnlFilter);
+            this.tabDanhSachNhanVien.Location = new System.Drawing.Point(4, 26);
+            this.tabDanhSachNhanVien.Name = "tabDanhSachNhanVien";
+            this.tabDanhSachNhanVien.Padding = new System.Windows.Forms.Padding(3);
+            this.tabDanhSachNhanVien.Size = new System.Drawing.Size(1092, 572);
+            this.tabDanhSachNhanVien.TabIndex = 0;
+            this.tabDanhSachNhanVien.Text = "👥 Danh sách Nhân viên";
+            this.tabDanhSachNhanVien.UseVisualStyleBackColor = true;
+            // 
+            // tabGioLamBaoCao
+            // 
+            this.tabGioLamBaoCao.Controls.Add(this.dgvGioLam);
+            this.tabGioLamBaoCao.Controls.Add(this.pnlFilterGioLam);
+            this.tabGioLamBaoCao.Location = new System.Drawing.Point(4, 26);
+            this.tabGioLamBaoCao.Name = "tabGioLamBaoCao";
+            this.tabGioLamBaoCao.Padding = new System.Windows.Forms.Padding(12);
+            this.tabGioLamBaoCao.Size = new System.Drawing.Size(1092, 572);
+            this.tabGioLamBaoCao.TabIndex = 1;
+            this.tabGioLamBaoCao.Text = "📊 Quản lý Giờ làm & Báo cáo Lương";
+            this.tabGioLamBaoCao.UseVisualStyleBackColor = true;
+            // 
+            // pnlFilterGioLam
+            // 
+            this.pnlFilterGioLam.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
+            this.pnlFilterGioLam.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pnlFilterGioLam.Controls.Add(this.lblTuNgay);
+            this.pnlFilterGioLam.Controls.Add(this.dtpTuNgay);
+            this.pnlFilterGioLam.Controls.Add(this.lblDenNgay);
+            this.pnlFilterGioLam.Controls.Add(this.dtpDenNgay);
+            this.pnlFilterGioLam.Controls.Add(this.txtTimKiemGioLam);
+            this.pnlFilterGioLam.Controls.Add(this.btnLocGioLam);
+            this.pnlFilterGioLam.Controls.Add(this.btnXuatExcelGioLam);
+            this.pnlFilterGioLam.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlFilterGioLam.Location = new System.Drawing.Point(12, 12);
+            this.pnlFilterGioLam.Name = "pnlFilterGioLam";
+            this.pnlFilterGioLam.Size = new System.Drawing.Size(1068, 56);
+            this.pnlFilterGioLam.TabIndex = 0;
+            // 
+            // lblTuNgay
+            // 
+            this.lblTuNgay.AutoSize = true;
+            this.lblTuNgay.Location = new System.Drawing.Point(15, 18);
+            this.lblTuNgay.Name = "lblTuNgay";
+            this.lblTuNgay.Size = new System.Drawing.Size(58, 17);
+            this.lblTuNgay.TabIndex = 0;
+            this.lblTuNgay.Text = "Từ ngày:";
+            // 
+            // dtpTuNgay
+            // 
+            this.dtpTuNgay.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.dtpTuNgay.Location = new System.Drawing.Point(75, 15);
+            this.dtpTuNgay.Name = "dtpTuNgay";
+            this.dtpTuNgay.Size = new System.Drawing.Size(110, 24);
+            this.dtpTuNgay.TabIndex = 1;
+            // 
+            // lblDenNgay
+            // 
+            this.lblDenNgay.AutoSize = true;
+            this.lblDenNgay.Location = new System.Drawing.Point(195, 18);
+            this.lblDenNgay.Name = "lblDenNgay";
+            this.lblDenNgay.Size = new System.Drawing.Size(65, 17);
+            this.lblDenNgay.TabIndex = 2;
+            this.lblDenNgay.Text = "Đến ngày:";
+            // 
+            // dtpDenNgay
+            // 
+            this.dtpDenNgay.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.dtpDenNgay.Location = new System.Drawing.Point(265, 15);
+            this.dtpDenNgay.Name = "dtpDenNgay";
+            this.dtpDenNgay.Size = new System.Drawing.Size(110, 24);
+            this.dtpDenNgay.TabIndex = 3;
+            // 
+            // txtTimKiemGioLam
+            // 
+            this.txtTimKiemGioLam.Location = new System.Drawing.Point(395, 15);
+            this.txtTimKiemGioLam.Name = "txtTimKiemGioLam";
+            this.txtTimKiemGioLam.Size = new System.Drawing.Size(200, 24);
+            this.txtTimKiemGioLam.TabIndex = 4;
+            // 
+            // btnLocGioLam
+            // 
+            this.btnLocGioLam.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(14)))), ((int)(((byte)(165)))), ((int)(((byte)(233)))));
+            this.btnLocGioLam.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnLocGioLam.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnLocGioLam.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+            this.btnLocGioLam.ForeColor = System.Drawing.Color.White;
+            this.btnLocGioLam.Location = new System.Drawing.Point(610, 13);
+            this.btnLocGioLam.Name = "btnLocGioLam";
+            this.btnLocGioLam.Size = new System.Drawing.Size(100, 28);
+            this.btnLocGioLam.TabIndex = 5;
+            this.btnLocGioLam.Text = "🔍 Lọc dữ liệu";
+            this.btnLocGioLam.UseVisualStyleBackColor = false;
+            // 
+            // btnXuatExcelGioLam
+            // 
+            this.btnXuatExcelGioLam.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(22)))), ((int)(((byte)(163)))), ((int)(((byte)(74)))));
+            this.btnXuatExcelGioLam.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnXuatExcelGioLam.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnXuatExcelGioLam.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnXuatExcelGioLam.ForeColor = System.Drawing.Color.White;
+            this.btnXuatExcelGioLam.Location = new System.Drawing.Point(725, 13);
+            this.btnXuatExcelGioLam.Name = "btnXuatExcelGioLam";
+            this.btnXuatExcelGioLam.Size = new System.Drawing.Size(220, 28);
+            this.btnXuatExcelGioLam.TabIndex = 6;
+            this.btnXuatExcelGioLam.Text = "📊 Xuất Excel Báo Cáo Lương";
+            this.btnXuatExcelGioLam.UseVisualStyleBackColor = false;
+            // 
+            // dgvGioLam
+            // 
+            this.dgvGioLam.AllowUserToAddRows = false;
+            this.dgvGioLam.AllowUserToDeleteRows = false;
+            this.dgvGioLam.BackgroundColor = System.Drawing.Color.White;
+            this.dgvGioLam.ColumnHeadersHeight = 35;
+            this.dgvGioLam.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.colGioLamMaNV,
+            this.colGioLamTenNV,
+            this.colGioLamTongSoCa,
+            this.colGioLamTongGioLam,
+            this.colGioLamCaDauTien,
+            this.colGioLamCaCuoiCung});
+            this.dgvGioLam.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvGioLam.EnableHeadersVisualStyles = false;
+            this.dgvGioLam.Location = new System.Drawing.Point(12, 68);
+            this.dgvGioLam.Name = "dgvGioLam";
+            this.dgvGioLam.ReadOnly = true;
+            this.dgvGioLam.RowHeadersVisible = false;
+            this.dgvGioLam.RowTemplate.Height = 30;
+            this.dgvGioLam.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvGioLam.Size = new System.Drawing.Size(1068, 492);
+            this.dgvGioLam.TabIndex = 1;
+            this.dgvGioLam.AlternatingRowsDefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
+            // 
+            // colGioLamMaNV
+            // 
+            this.colGioLamMaNV.DataPropertyName = "MaNhanVien";
+            this.colGioLamMaNV.HeaderText = "Mã NV";
+            this.colGioLamMaNV.Name = "colGioLamMaNV";
+            this.colGioLamMaNV.ReadOnly = true;
+            this.colGioLamMaNV.Width = 80;
+            // 
+            // colGioLamTenNV
+            // 
+            this.colGioLamTenNV.DataPropertyName = "TenNhanVien";
+            this.colGioLamTenNV.HeaderText = "Tên Nhân Viên";
+            this.colGioLamTenNV.Name = "colGioLamTenNV";
+            this.colGioLamTenNV.ReadOnly = true;
+            this.colGioLamTenNV.Width = 200;
+            // 
+            // colGioLamTongSoCa
+            // 
+            this.colGioLamTongSoCa.DataPropertyName = "TongSoCa";
+            this.colGioLamTongSoCa.HeaderText = "Tổng Số Ca";
+            this.colGioLamTongSoCa.Name = "colGioLamTongSoCa";
+            this.colGioLamTongSoCa.ReadOnly = true;
+            this.colGioLamTongSoCa.Width = 120;
+            this.colGioLamTongSoCa.DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            // 
+            // colGioLamTongGioLam
+            // 
+            this.colGioLamTongGioLam.DataPropertyName = "TongGioLam";
+            this.colGioLamTongGioLam.HeaderText = "Tổng Giờ Làm";
+            this.colGioLamTongGioLam.Name = "colGioLamTongGioLam";
+            this.colGioLamTongGioLam.ReadOnly = true;
+            this.colGioLamTongGioLam.Width = 140;
+            this.colGioLamTongGioLam.DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            this.colGioLamTongGioLam.DefaultCellStyle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(2)))), ((int)(((byte)(132)))), ((int)(((byte)(199)))));
+            this.colGioLamTongGioLam.DefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.colGioLamTongGioLam.DefaultCellStyle.Format = "N2";
+            // 
+            // colGioLamCaDauTien
+            // 
+            this.colGioLamCaDauTien.DataPropertyName = "CaDauTien";
+            this.colGioLamCaDauTien.HeaderText = "Ca Đầu Tiên";
+            this.colGioLamCaDauTien.Name = "colGioLamCaDauTien";
+            this.colGioLamCaDauTien.ReadOnly = true;
+            this.colGioLamCaDauTien.Width = 180;
+            this.colGioLamCaDauTien.DefaultCellStyle.Format = "dd/MM/yyyy HH:mm";
+            // 
+            // colGioLamCaCuoiCung
+            // 
+            this.colGioLamCaCuoiCung.DataPropertyName = "CaCuoiCung";
+            this.colGioLamCaCuoiCung.HeaderText = "Ca Cuối Cùng";
+            this.colGioLamCaCuoiCung.Name = "colGioLamCaCuoiCung";
+            this.colGioLamCaCuoiCung.ReadOnly = true;
+            this.colGioLamCaCuoiCung.Width = 180;
+            this.colGioLamCaCuoiCung.DefaultCellStyle.Format = "dd/MM/yyyy HH:mm";
+            // 
             // FrmQuanLyNhanVien
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
             this.ClientSize = new System.Drawing.Size(1100, 650);
-            this.Controls.Add(this.pnlMain);
-            this.Controls.Add(this.pnlFilter);
+            this.Controls.Add(this.tabControlMain);
             this.Controls.Add(this.pnlHeaderTitle);
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
@@ -609,6 +836,12 @@ namespace QLCF.Forms
             this.pnlDetail.ResumeLayout(false);
             this.pnlDetail.PerformLayout();
             this.pnlActionButtons.ResumeLayout(false);
+            this.tabControlMain.ResumeLayout(false);
+            this.tabDanhSachNhanVien.ResumeLayout(false);
+            this.tabGioLamBaoCao.ResumeLayout(false);
+            this.pnlFilterGioLam.ResumeLayout(false);
+            this.pnlFilterGioLam.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvGioLam)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -658,5 +891,25 @@ namespace QLCF.Forms
         private System.Windows.Forms.DataGridViewTextBoxColumn colSoDienThoai;
         private System.Windows.Forms.DataGridViewTextBoxColumn colTrangThaiText;
         private System.Windows.Forms.DataGridViewTextBoxColumn colNgayTao;
+
+        // Bổ sung TabControl và chức năng Quản lý giờ làm
+        private System.Windows.Forms.TabControl tabControlMain;
+        private System.Windows.Forms.TabPage tabDanhSachNhanVien;
+        private System.Windows.Forms.TabPage tabGioLamBaoCao;
+        private System.Windows.Forms.Panel pnlFilterGioLam;
+        private System.Windows.Forms.DateTimePicker dtpTuNgay;
+        private System.Windows.Forms.Label lblTuNgay;
+        private System.Windows.Forms.DateTimePicker dtpDenNgay;
+        private System.Windows.Forms.Label lblDenNgay;
+        private System.Windows.Forms.TextBox txtTimKiemGioLam;
+        private System.Windows.Forms.Button btnLocGioLam;
+        private System.Windows.Forms.Button btnXuatExcelGioLam;
+        private System.Windows.Forms.DataGridView dgvGioLam;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colGioLamMaNV;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colGioLamTenNV;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colGioLamTongSoCa;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colGioLamTongGioLam;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colGioLamCaDauTien;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colGioLamCaCuoiCung;
     }
 }

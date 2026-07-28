@@ -27,6 +27,9 @@ namespace QLCF.Forms
         private string selectedMonTen = string.Empty;
         private int selectedSoLuongCu = 0;
 
+        // Shift Tracking
+        private DateTime shiftStartTime;
+
         public FrmBanHang()
         {
             InitializeComponent();
@@ -51,6 +54,9 @@ namespace QLCF.Forms
             this.btnThanhToan.Click += btnThanhToan_Click;
             this.btnChuyenBan.Click += btnChuyenBan_Click;
             this.btnGopBan.Click += btnGopBan_Click;
+
+            // Đăng ký sự kiện Kết Ca
+            this.btnKetCaTopBar.Click += btnKetCaTopBar_Click;
         }
 
         private void FrmBanHang_Load(object sender, EventArgs e)
@@ -79,6 +85,9 @@ namespace QLCF.Forms
             LoadKhuVuc();
             LoadDanhMuc();
             LoadMonAn();
+
+            // Khởi tạo Shift Timer
+            InitShiftTimer();
         }
 
         #region 1. DỮ LIỆU KHU VỰC VÀ SƠ ĐỒ BÀN
@@ -1289,6 +1298,69 @@ namespace QLCF.Forms
         private void btnDong_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        #endregion
+
+        #region 6. SHIFT CHECKOUT LOGIC
+
+        private void InitShiftTimer()
+        {
+            if (UserSession.CurrentShiftId > 0)
+            {
+                var checkInTime = ShiftService.GetShiftCheckInTime(UserSession.CurrentShiftId);
+                if (checkInTime.HasValue)
+                {
+                    shiftStartTime = checkInTime.Value;
+                    shiftTimer.Interval = 1000;
+                    shiftTimer.Tick += ShiftTimer_Tick;
+                    shiftTimer.Start();
+                    
+                    // Trigger once immediately
+                    ShiftTimer_Tick(null, EventArgs.Empty);
+                }
+                else
+                {
+                    lblShiftInfo.Text = "Thời gian vào ca: Không xác định";
+                }
+            }
+            else
+            {
+                lblShiftInfo.Text = "Không có ca làm việc";
+                lblActiveShiftBadge.Text = "⚪ Không trong ca";
+                lblActiveShiftBadge.ForeColor = Color.Gray;
+                btnKetCaTopBar.Enabled = false;
+            }
+        }
+
+        private void ShiftTimer_Tick(object sender, EventArgs e)
+        {
+            TimeSpan duration = DateTime.Now - shiftStartTime;
+            lblShiftInfo.Text = $"Vào ca: {shiftStartTime:HH:mm} | Thời gian ca: {duration.Hours:D2}h {duration.Minutes:D2}m {duration.Seconds:D2}s";
+        }
+
+        private void btnKetCaTopBar_Click(object sender, EventArgs e)
+        {
+            var confirm = MessageBox.Show(
+                $"Bạn đang thực hiện KẾT CA.\nThời gian vào ca: {shiftStartTime:HH:mm dd/MM/yyyy}\nThời gian hiện tại: {DateTime.Now:HH:mm dd/MM/yyyy}\n\nXác nhận kết thúc ca làm?",
+                "Xác Nhận Kết Ca",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            if (confirm == DialogResult.Yes)
+            {
+                if (ShiftService.CheckOutShift(UserSession.CurrentShiftId, out decimal tongGioLam))
+                {
+                    shiftTimer.Stop();
+                    MessageBox.Show($"Kết ca thành công!\nTổng thời gian làm việc: {tongGioLam} giờ", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    this.Close(); // Return to dashboard
+                }
+                else
+                {
+                    MessageBox.Show("Lỗi khi kết ca. Vui lòng thử lại!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
 
         #endregion
