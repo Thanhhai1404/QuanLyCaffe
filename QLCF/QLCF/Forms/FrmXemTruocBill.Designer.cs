@@ -402,8 +402,9 @@ namespace QLCF.Forms
             dataGridViewCellStyle2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
             dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.White;
             dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dgvMonAn.DefaultCellStyle = dataGridViewCellStyle2;
+            this.dgvMonAn.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders;
             this.dgvMonAn.Dock = System.Windows.Forms.DockStyle.Top;
             this.dgvMonAn.EnableHeadersVisualStyles = false;
             this.dgvMonAn.GridColor = System.Drawing.Color.White;
@@ -420,7 +421,7 @@ namespace QLCF.Forms
             // 
             // colTenMon
             // 
-            this.colTenMon.DataPropertyName = "TenMon";
+            this.colTenMon.DataPropertyName = "TenMonHienThi";
             this.colTenMon.FillWeight = 140F;
             this.colTenMon.HeaderText = "Món";
             this.colTenMon.MinimumWidth = 100;

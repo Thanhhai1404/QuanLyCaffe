@@ -438,8 +438,25 @@ namespace QLCF.Forms
             {
                 using (SqlConnection conn = Db.CreateConnection())
                 {
-                    string sql = @"
-                        SELECT ct.MaCTHD, ct.MaHD, ct.MaMon, m.TenMon, ct.SoLuong, ct.DonGia, ct.ThanhTien, ct.GhiChu
+                    conn.Open();
+
+                    bool hasTenSize = false;
+                    try
+                    {
+                        using (SqlCommand cmdCheck = new SqlCommand("SELECT COUNT(*) FROM sys.columns WHERE object_id = OBJECT_ID('dbo.ChiTietHoaDon') AND name = 'TenSize'", conn))
+                        {
+                            object res = cmdCheck.ExecuteScalar();
+                            hasTenSize = res != null && Convert.ToInt32(res) > 0;
+                        }
+                    }
+                    catch { }
+
+                    string colTenSize = hasTenSize ? "ISNULL(ct.TenSize, '') AS TenSize" : "'' AS TenSize";
+
+                    string sql = $@"
+                        SELECT ct.MaCTHD, ct.MaHD, ct.MaMon, m.TenMon, 
+                               {colTenSize},
+                               ct.SoLuong, ct.DonGia, ct.ThanhTien, ct.GhiChu
                         FROM dbo.ChiTietHoaDon ct
                         JOIN dbo.MonAn m ON ct.MaMon = m.MaMon
                         WHERE ct.MaHD = @MaHD
@@ -448,7 +465,6 @@ namespace QLCF.Forms
                     using (SqlCommand cmd = new SqlCommand(sql, conn))
                     {
                         cmd.Parameters.Add("@MaHD", SqlDbType.Int).Value = maHD;
-                        conn.Open();
 
                         using (SqlDataReader reader = cmd.ExecuteReader())
                         {
@@ -460,6 +476,7 @@ namespace QLCF.Forms
                                     MaHD = Convert.ToInt32(reader["MaHD"]),
                                     MaMon = Convert.ToInt32(reader["MaMon"]),
                                     TenMon = reader["TenMon"].ToString(),
+                                    TenSize = reader["TenSize"] != DBNull.Value ? reader["TenSize"].ToString() : "",
                                     SoLuong = Convert.ToInt32(reader["SoLuong"]),
                                     DonGia = Convert.ToDecimal(reader["DonGia"]),
                                     ThanhTien = Convert.ToDecimal(reader["ThanhTien"]),

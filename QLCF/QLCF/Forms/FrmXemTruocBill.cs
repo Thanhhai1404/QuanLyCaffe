@@ -81,11 +81,18 @@ namespace QLCF.Forms
 
             // Bind danh sách món ăn
             dgvMonAn.AutoGenerateColumns = false;
+            dgvMonAn.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            dgvMonAn.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders;
             dgvMonAn.DataSource = _chiTietList;
 
-            // Tính chiều cao động cho Grid danh sách món ăn
-            int rowHeight = dgvMonAn.RowTemplate.Height > 0 ? dgvMonAn.RowTemplate.Height : 24;
-            int totalGridHeight = dgvMonAn.ColumnHeadersHeight + (_chiTietList.Count * rowHeight) + 6;
+            // Tính chiều cao động cho Grid danh sách món ăn dựa trên các dòng đã wrap text
+            dgvMonAn.AutoResizeRows(DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders);
+            int totalRowHeights = 0;
+            foreach (DataGridViewRow row in dgvMonAn.Rows)
+            {
+                totalRowHeights += row.Height;
+            }
+            int totalGridHeight = dgvMonAn.ColumnHeadersHeight + totalRowHeights + 8;
             dgvMonAn.Height = Math.Max(60, totalGridHeight);
 
             // Tắt AutoSize để tự quản lý chiều cao

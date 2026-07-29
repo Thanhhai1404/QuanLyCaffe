@@ -473,12 +473,13 @@ namespace QLCF.Forms
                 using (SqlConnection conn = Db.CreateConnection())
                 {
                     string sql = @"
-                        SELECT MaMon, TenMon, MaDM, DonGia, HinhAnh
-                        FROM dbo.MonAn
-                        WHERE TrangThai = 1
-                          AND (@MaDM IS NULL OR MaDM = @MaDM)
-                          AND (@TuKhoa IS NULL OR TenMon LIKE '%' + @TuKhoa + '%')
-                        ORDER BY TenMon";
+                        SELECT m.MaMon, m.TenMon, m.MaDM, dm.TenDanhMuc, m.DonGia, m.HinhAnh
+                        FROM dbo.MonAn m
+                        LEFT JOIN dbo.DanhMuc dm ON m.MaDM = dm.MaDM
+                        WHERE m.TrangThai = 1
+                          AND (@MaDM IS NULL OR m.MaDM = @MaDM)
+                          AND (@TuKhoa IS NULL OR m.TenMon LIKE '%' + @TuKhoa + '%')
+                        ORDER BY m.TenMon";
 
                     using (SqlCommand cmd = new SqlCommand(sql, conn))
                     {
@@ -496,6 +497,7 @@ namespace QLCF.Forms
                                     MaMon = Convert.ToInt32(reader["MaMon"]),
                                     TenMon = reader["TenMon"].ToString(),
                                     MaDM = Convert.ToInt32(reader["MaDM"]),
+                                    TenDanhMuc = reader["TenDanhMuc"] != DBNull.Value ? reader["TenDanhMuc"].ToString() : "",
                                     DonGia = Convert.ToDecimal(reader["DonGia"]),
                                     HinhAnh = reader["HinhAnh"] != DBNull.Value ? reader["HinhAnh"].ToString() : null
                                 };
@@ -606,6 +608,44 @@ namespace QLCF.Forms
             return pnlCard;
         }
 
+        private void ThucHienThemMon(MonAnModel mon, string sizeName, decimal giaPhuThu, int soLuong, string ghiChu)
+        {
+            try
+            {
+                using (SqlConnection conn = Db.CreateConnection())
+                {
+                    conn.Open();
+                    try
+                    {
+                        using (SqlCommand cmd = new SqlCommand("sp_ThemMonVaoHoaDon", conn))
+                        {
+                            cmd.CommandType = CommandType.StoredProcedure;
+                            cmd.Parameters.Add("@MaBan", SqlDbType.Int).Value = currentBan.MaBan;
+                            cmd.Parameters.Add("@MaNV", SqlDbType.Int).Value = UserSession.MaNV;
+                            cmd.Parameters.Add("@MaMon", SqlDbType.Int).Value = mon.MaMon;
+                            cmd.Parameters.Add("@SoLuong", SqlDbType.Int).Value = soLuong;
+                            cmd.Parameters.Add("@TenSize", SqlDbType.NVarChar, 20).Value = (object)sizeName ?? DBNull.Value;
+                            cmd.Parameters.Add("@GiaPhuThu", SqlDbType.Decimal).Value = giaPhuThu;
+                            cmd.Parameters.Add("@GhiChu", SqlDbType.NVarChar, 300).Value = !string.IsNullOrWhiteSpace(ghiChu) ? (object)ghiChu : DBNull.Value;
+
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    catch (SqlException ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("SP call failed, using inline SQL fallback: " + ex.Message);
+                        ThemMonVaoHoaDonTrucTiep(conn, currentBan.MaBan, UserSession.MaNV, mon.MaMon, sizeName, giaPhuThu, soLuong, ghiChu, mon.DonGia);
+                    }
+                }
+
+                LamMoiDuLieuBanDangChon();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi thêm món vào hóa đơn.\n\nChi tiết: " + ex.Message, "Lỗi CSDL", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void MonAn_FastOrderClick(MonAnModel mon)
         {
             if (currentBan == null)
@@ -616,30 +656,155 @@ namespace QLCF.Forms
                 return;
             }
 
-            try
+            // Mở modal chọn Size cho tất cả món ăn
+            using (FrmChonSize frmSize = new FrmChonSize(mon))
             {
-                using (SqlConnection conn = Db.CreateConnection())
+                if (frmSize.ShowDialog() != DialogResult.OK)
                 {
-                    using (SqlCommand cmd = new SqlCommand("sp_ThemMonVaoHoaDon", conn))
-                    {
-                        cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.Add("@MaBan", SqlDbType.Int).Value = currentBan.MaBan;
-                        cmd.Parameters.Add("@MaNV", SqlDbType.Int).Value = UserSession.MaNV;
-                        cmd.Parameters.Add("@MaMon", SqlDbType.Int).Value = mon.MaMon;
-                        cmd.Parameters.Add("@SoLuong", SqlDbType.Int).Value = 1;
-                        cmd.Parameters.Add("@GhiChu", SqlDbType.NVarChar, 300).Value = DBNull.Value;
-
-                        conn.Open();
-                        cmd.ExecuteNonQuery();
-                    }
+                    return; // Người dùng hủy chọn
                 }
 
-                // Fast UI Refresh không MessageBox!
-                LamMoiDuLieuBanDangChon();
+                string sizeName = frmSize.SelectedSize;
+                decimal giaPhuThu = frmSize.SelectedGiaPhuThu;
+                int soLuong = frmSize.SelectedSoLuong;
+                string ghiChu = frmSize.SelectedGhiChu;
+
+                ThucHienThemMon(mon, sizeName, giaPhuThu, soLuong, ghiChu);
             }
-            catch (Exception ex)
+        }
+
+        private void ThemMonVaoHoaDonTrucTiep(SqlConnection conn, int maBan, int maNV, int maMon, string tenSize, decimal giaPhuThu, int soLuong, string ghiChu, decimal donGiaGoc)
+        {
+            decimal donGiaThucTe = donGiaGoc + giaPhuThu;
+            int? maHD = null;
+
+            string sqlFindHD = "SELECT TOP 1 MaHD FROM dbo.HoaDon WHERE MaBan = @MaBan AND TrangThai = 0";
+            using (SqlCommand cmdFind = new SqlCommand(sqlFindHD, conn))
             {
-                MessageBox.Show("Lỗi khi thêm món vào hóa đơn.\n\nChi tiết: " + ex.Message, "Lỗi CSDL", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                cmdFind.Parameters.Add("@MaBan", SqlDbType.Int).Value = maBan;
+                object res = cmdFind.ExecuteScalar();
+                if (res != null && res != DBNull.Value)
+                    maHD = Convert.ToInt32(res);
+            }
+
+            if (!maHD.HasValue)
+            {
+                bool hasMaNVMo = CheckColumnExists(conn, "HoaDon", "MaNVMo");
+                bool hasMaNVTao = CheckColumnExists(conn, "HoaDon", "MaNVTao");
+                bool hasMaNV = CheckColumnExists(conn, "HoaDon", "MaNV");
+                bool hasNgayTao = CheckColumnExists(conn, "HoaDon", "NgayTao");
+                bool hasGioVao = CheckColumnExists(conn, "HoaDon", "GioVao");
+                bool hasNgayMo = CheckColumnExists(conn, "HoaDon", "NgayMo");
+                bool hasTongTienGoc = CheckColumnExists(conn, "HoaDon", "TongTienGoc");
+                bool hasTongTienTT = CheckColumnExists(conn, "HoaDon", "TongTienThanhToan");
+                bool hasTongTien = CheckColumnExists(conn, "HoaDon", "TongTien");
+
+                List<string> cols = new List<string> { "MaBan", "TrangThai" };
+                List<string> vals = new List<string> { "@MaBan", "0" };
+
+                bool needMaNVParam = false;
+                if (hasMaNVMo) { cols.Add("MaNVMo"); vals.Add("@MaNV"); needMaNVParam = true; }
+                if (hasMaNVTao) { cols.Add("MaNVTao"); vals.Add("@MaNV"); needMaNVParam = true; }
+                if (hasMaNV && !hasMaNVMo && !hasMaNVTao) { cols.Add("MaNV"); vals.Add("@MaNV"); needMaNVParam = true; }
+
+                if (hasNgayTao) { cols.Add("NgayTao"); vals.Add("GETDATE()"); }
+                if (hasGioVao) { cols.Add("GioVao"); vals.Add("GETDATE()"); }
+                if (hasNgayMo) { cols.Add("NgayMo"); vals.Add("GETDATE()"); }
+
+                if (hasTongTienGoc) { cols.Add("TongTienGoc"); vals.Add("0"); }
+                if (hasTongTienTT) { cols.Add("TongTienThanhToan"); vals.Add("0"); }
+                if (hasTongTien) { cols.Add("TongTien"); vals.Add("0"); }
+
+                string sqlCreateHD = $"INSERT INTO dbo.HoaDon ({string.Join(", ", cols)}) VALUES ({string.Join(", ", vals)}); SELECT SCOPE_IDENTITY();";
+                using (SqlCommand cmdCreate = new SqlCommand(sqlCreateHD, conn))
+                {
+                    cmdCreate.Parameters.Add("@MaBan", SqlDbType.Int).Value = maBan;
+                    if (needMaNVParam) cmdCreate.Parameters.Add("@MaNV", SqlDbType.Int).Value = maNV;
+                    maHD = Convert.ToInt32(cmdCreate.ExecuteScalar());
+                }
+
+                string sqlUpdBan = "UPDATE dbo.Ban SET DangSuDung = 1, TrangThai = N'Có người' WHERE MaBan = @MaBan";
+                using (SqlCommand cmdBan = new SqlCommand(sqlUpdBan, conn))
+                {
+                    cmdBan.Parameters.Add("@MaBan", SqlDbType.Int).Value = maBan;
+                    cmdBan.ExecuteNonQuery();
+                }
+            }
+
+            string sqlCheckCT = "SELECT COUNT(*) FROM dbo.ChiTietHoaDon WHERE MaHD = @MaHD AND MaMon = @MaMon AND ISNULL(TenSize, '') = ISNULL(@TenSize, '')";
+            int count = 0;
+            using (SqlCommand cmdCheck = new SqlCommand(sqlCheckCT, conn))
+            {
+                cmdCheck.Parameters.Add("@MaHD", SqlDbType.Int).Value = maHD.Value;
+                cmdCheck.Parameters.Add("@MaMon", SqlDbType.Int).Value = maMon;
+                cmdCheck.Parameters.Add("@TenSize", SqlDbType.NVarChar, 20).Value = (object)tenSize ?? DBNull.Value;
+                count = Convert.ToInt32(cmdCheck.ExecuteScalar());
+            }
+
+            if (count > 0)
+            {
+                string sqlUpdateCT = @"UPDATE dbo.ChiTietHoaDon 
+                    SET SoLuong = SoLuong + @SoLuong, 
+                        DonGia = @DonGia, 
+                        GhiChu = CASE WHEN @GhiChu IS NOT NULL AND @GhiChu <> '' THEN @GhiChu ELSE GhiChu END 
+                    WHERE MaHD = @MaHD AND MaMon = @MaMon AND ISNULL(TenSize, '') = ISNULL(@TenSize, '')";
+                using (SqlCommand cmdUpd = new SqlCommand(sqlUpdateCT, conn))
+                {
+                    cmdUpd.Parameters.Add("@SoLuong", SqlDbType.Int).Value = soLuong;
+                    cmdUpd.Parameters.Add("@DonGia", SqlDbType.Decimal).Value = donGiaThucTe;
+                    cmdUpd.Parameters.Add("@GhiChu", SqlDbType.NVarChar, 300).Value = !string.IsNullOrWhiteSpace(ghiChu) ? (object)ghiChu : DBNull.Value;
+                    cmdUpd.Parameters.Add("@MaHD", SqlDbType.Int).Value = maHD.Value;
+                    cmdUpd.Parameters.Add("@MaMon", SqlDbType.Int).Value = maMon;
+                    cmdUpd.Parameters.Add("@TenSize", SqlDbType.NVarChar, 20).Value = (object)tenSize ?? DBNull.Value;
+                    cmdUpd.ExecuteNonQuery();
+                }
+            }
+            else
+            {
+                string sqlInsertCT = @"INSERT INTO dbo.ChiTietHoaDon (MaHD, MaMon, TenSize, SoLuong, DonGia, GhiChu) 
+                    VALUES (@MaHD, @MaMon, @TenSize, @SoLuong, @DonGia, @GhiChu)";
+                using (SqlCommand cmdIns = new SqlCommand(sqlInsertCT, conn))
+                {
+                    cmdIns.Parameters.Add("@MaHD", SqlDbType.Int).Value = maHD.Value;
+                    cmdIns.Parameters.Add("@MaMon", SqlDbType.Int).Value = maMon;
+                    cmdIns.Parameters.Add("@TenSize", SqlDbType.NVarChar, 20).Value = (object)tenSize ?? DBNull.Value;
+                    cmdIns.Parameters.Add("@SoLuong", SqlDbType.Int).Value = soLuong;
+                    cmdIns.Parameters.Add("@DonGia", SqlDbType.Decimal).Value = donGiaThucTe;
+                    cmdIns.Parameters.Add("@GhiChu", SqlDbType.NVarChar, 300).Value = !string.IsNullOrWhiteSpace(ghiChu) ? (object)ghiChu : DBNull.Value;
+                    cmdIns.ExecuteNonQuery();
+                }
+            }
+
+            bool hasTongTienThanhToan = CheckColumnExists(conn, "HoaDon", "TongTienThanhToan");
+            bool hasTongTienCol = CheckColumnExists(conn, "HoaDon", "TongTien");
+            string updateSql = "UPDATE dbo.HoaDon SET TongTienGoc = (SELECT ISNULL(SUM(ThanhTien), 0) FROM dbo.ChiTietHoaDon WHERE MaHD = @MaHD)";
+            if (hasTongTienThanhToan) updateSql += ", TongTienThanhToan = (SELECT ISNULL(SUM(ThanhTien), 0) FROM dbo.ChiTietHoaDon WHERE MaHD = @MaHD)";
+            else if (hasTongTienCol) updateSql += ", TongTien = (SELECT ISNULL(SUM(ThanhTien), 0) FROM dbo.ChiTietHoaDon WHERE MaHD = @MaHD)";
+            updateSql += " WHERE MaHD = @MaHD";
+
+            using (SqlCommand cmdTot = new SqlCommand(updateSql, conn))
+            {
+                cmdTot.Parameters.Add("@MaHD", SqlDbType.Int).Value = maHD.Value;
+                cmdTot.ExecuteNonQuery();
+            }
+        }
+
+        private bool CheckColumnExists(SqlConnection conn, string tableName, string columnName)
+        {
+            try
+            {
+                string sql = "SELECT COUNT(*) FROM sys.columns WHERE object_id = OBJECT_ID(@TableName) AND name = @ColumnName";
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@TableName", "dbo." + tableName);
+                    cmd.Parameters.AddWithValue("@ColumnName", columnName);
+                    object res = cmd.ExecuteScalar();
+                    return res != null && Convert.ToInt32(res) > 0;
+                }
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -694,7 +859,9 @@ namespace QLCF.Forms
                 using (SqlConnection conn = Db.CreateConnection())
                 {
                     string sql = @"
-                        SELECT ct.MaCTHD, ct.MaHD, ct.MaMon, m.TenMon, ct.SoLuong, ct.DonGia, ct.ThanhTien, ct.GhiChu
+                        SELECT ct.MaCTHD, ct.MaHD, ct.MaMon, m.TenMon, 
+                               ISNULL(ct.TenSize, '') AS TenSize, 
+                               ct.SoLuong, ct.DonGia, ct.ThanhTien, ct.GhiChu
                         FROM dbo.ChiTietHoaDon ct
                         JOIN dbo.MonAn m ON ct.MaMon = m.MaMon
                         JOIN dbo.HoaDon hd ON ct.MaHD = hd.MaHD
@@ -717,6 +884,7 @@ namespace QLCF.Forms
                                     MaHD = Convert.ToInt32(reader["MaHD"]),
                                     MaMon = Convert.ToInt32(reader["MaMon"]),
                                     TenMon = reader["TenMon"].ToString(),
+                                    TenSize = reader["TenSize"] != DBNull.Value ? reader["TenSize"].ToString() : "",
                                     SoLuong = Convert.ToInt32(reader["SoLuong"]),
                                     DonGia = Convert.ToDecimal(reader["DonGia"]),
                                     ThanhTien = Convert.ToDecimal(reader["ThanhTien"]),
@@ -728,6 +896,20 @@ namespace QLCF.Forms
                 }
 
                 dgvChiTietHoaDon.DataSource = listChiTiet;
+
+                dgvChiTietHoaDon.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+                dgvChiTietHoaDon.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders;
+
+                if (dgvChiTietHoaDon.Columns["colTenMon"] != null)
+                {
+                    dgvChiTietHoaDon.Columns["colTenMon"].DataPropertyName = "TenMonHienThi";
+                    dgvChiTietHoaDon.Columns["colTenMon"].DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+                }
+                else if (dgvChiTietHoaDon.Columns["TenMon"] != null)
+                {
+                    dgvChiTietHoaDon.Columns["TenMon"].DataPropertyName = "TenMonHienThi";
+                    dgvChiTietHoaDon.Columns["TenMon"].DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+                }
 
                 // Format hiển thị và lề cho các cột trong DataGridView Hóa đơn
                 if (dgvChiTietHoaDon.Columns["colDonGia"] != null)
@@ -789,50 +971,28 @@ namespace QLCF.Forms
                 return;
             }
 
-            // Validate 3: Số lượng phải lớn hơn 0
-            int soLuong = (int)nudSoLuong.Value;
-            if (soLuong <= 0)
+            // Mở modal chọn Size cho tất cả món ăn
+            using (FrmChonSize frmSize = new FrmChonSize(currentMonAn))
             {
-                MessageBox.Show("Số lượng phải lớn hơn 0.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            string ghiChu = txtGhiChuMon.Text.Trim();
-
-            try
-            {
-                using (SqlConnection conn = Db.CreateConnection())
+                if (frmSize.ShowDialog() != DialogResult.OK)
                 {
-                    using (SqlCommand cmd = new SqlCommand("sp_ThemMonVaoHoaDon", conn))
-                    {
-                        cmd.CommandType = CommandType.StoredProcedure;
-
-                        cmd.Parameters.Add("@MaBan", SqlDbType.Int).Value = currentBan.MaBan;
-                        cmd.Parameters.Add("@MaNV", SqlDbType.Int).Value = UserSession.MaNV;
-                        cmd.Parameters.Add("@MaMon", SqlDbType.Int).Value = currentMonAn.MaMon;
-                        cmd.Parameters.Add("@SoLuong", SqlDbType.Int).Value = soLuong;
-                        cmd.Parameters.Add("@GhiChu", SqlDbType.NVarChar, 300).Value = string.IsNullOrEmpty(ghiChu) ? (object)DBNull.Value : ghiChu;
-
-                        conn.Open();
-                        cmd.ExecuteNonQuery();
-                    }
+                    return;
                 }
 
-                using (var toast = new FrmSuccessToast("Đã thêm món", "Cập nhật dữ liệu thành công"))
+                string sizeName = frmSize.SelectedSize;
+                decimal giaPhuThu = frmSize.SelectedGiaPhuThu;
+                int soLuong = frmSize.SelectedSoLuong;
+                string ghiChu = frmSize.SelectedGhiChu;
+
+                ThucHienThemMon(currentMonAn, sizeName, giaPhuThu, soLuong, ghiChu);
+
+                using (var toast = new FrmSuccessToast("Đã thêm món", $"Đã thêm {currentMonAn.TenMon} ({sizeName})"))
                 {
                     toast.ShowDialog();
                 }
 
                 // Reset thông tin thêm món
-                nudSoLuong.Value = 1;
-                txtGhiChuMon.Clear();
-
-                // Cập nhật lại dữ liệu bàn đang chọn
-                LamMoiDuLieuBanDangChon();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Lỗi khi thêm món vào hóa đơn.\n\nChi tiết: " + ex.Message, "Lỗi CSDL", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ResetSelectedMonAn();
             }
         }
 
