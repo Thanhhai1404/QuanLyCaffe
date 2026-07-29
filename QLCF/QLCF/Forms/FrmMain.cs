@@ -31,6 +31,7 @@ namespace QLCF.Forms
             this.btnHoaDon.Click += btnHoaDon_Click;
             this.btnThongKe.Click += btnThongKe_Click;
             this.btnDoiMatKhau.Click += btnDoiMatKhau_Click;
+            this.btnKho.Click += btnKho_Click;
         }
 
         private void FrmMain_Load(object sender, EventArgs e)
@@ -55,7 +56,7 @@ namespace QLCF.Forms
             btnThongKe.Text = "📊 Thống kê";
             btnDoiMatKhau.Text = "🔑 Đổi mật khẩu";
 
-            Button[] menuButtons = new Button[] { btnBanHang, btnMonAn, btnKhuVucBan, btnNhanVien, btnHoaDon, btnThongKe, btnDoiMatKhau };
+            Button[] menuButtons = new Button[] { btnBanHang, btnMonAn, btnKhuVucBan, btnKho, btnNhanVien, btnHoaDon, btnThongKe, btnDoiMatKhau };
             foreach (Button b in menuButtons)
             {
                 if (b == null) continue;
@@ -97,6 +98,7 @@ namespace QLCF.Forms
                 btnBanHang.Visible = true;
                 btnMonAn.Visible = true;
                 btnKhuVucBan.Visible = true;
+                btnKho.Visible = true;
                 btnNhanVien.Visible = true;
                 btnHoaDon.Visible = true;
                 btnThongKe.Visible = true;
@@ -112,6 +114,7 @@ namespace QLCF.Forms
 
                 btnMonAn.Visible = false;
                 btnKhuVucBan.Visible = false;
+                btnKho.Visible = false;
                 btnNhanVien.Visible = false;
                 btnHoaDon.Visible = false;
                 btnThongKe.Visible = false;
@@ -214,7 +217,7 @@ namespace QLCF.Forms
         {
             if (selectedButton == null) return;
 
-            Button[] menuButtons = new Button[] { btnBanHang, btnMonAn, btnKhuVucBan, btnNhanVien, btnHoaDon, btnThongKe, btnDoiMatKhau };
+            Button[] menuButtons = new Button[] { btnBanHang, btnMonAn, btnKhuVucBan, btnKho, btnNhanVien, btnHoaDon, btnThongKe, btnDoiMatKhau };
             foreach (Button b in menuButtons)
             {
                 if (b == null) continue;
@@ -398,6 +401,15 @@ namespace QLCF.Forms
 
             FrmQuanLyNhanVien frmNhanVien = new FrmQuanLyNhanVien();
             HienThiNoiDung(frmNhanVien);
+        }
+
+        private void btnKho_Click(object sender, EventArgs e)
+        {
+            if (!KiemTraQuyenAdmin()) return;
+
+            CapNhatMenuDangChon(btnKho);
+            FrmQuanLyKho frmKho = new FrmQuanLyKho();
+            HienThiNoiDung(frmKho);
         }
     }
 }

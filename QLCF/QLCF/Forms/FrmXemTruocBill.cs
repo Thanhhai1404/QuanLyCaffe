@@ -88,22 +88,8 @@ namespace QLCF.Forms
             int totalGridHeight = dgvMonAn.ColumnHeadersHeight + (_chiTietList.Count * rowHeight) + 6;
             dgvMonAn.Height = Math.Max(60, totalGridHeight);
 
-            // Bỏ AutoSize để tự chỉnh chiều cao
+            // Tắt AutoSize để tự quản lý chiều cao
             pnlPaper.AutoSize = false;
-
-            // Trong sự kiện Load, các control Dock = Top chưa được gán tọa độ Bottom chính xác,
-            // nên ta phải tính chiều cao bằng cách cộng dồn Height của các control.
-            int totalHeight = 0;
-            foreach (Control c in pnlPaper.Controls)
-            {
-                if (c.Visible)
-                {
-                    totalHeight += c.Height;
-                }
-            }
-            
-            // Chiều cao paper = tổng chiều cao control + khoảng trống trên dưới
-            pnlPaper.Height = totalHeight + pnlPaper.Padding.Top + pnlPaper.Padding.Bottom;
 
             // Bind tổng kết tiền
             lblTongTienGocVal.Text = DinhDangTien(_tongTienGoc);
@@ -113,16 +99,47 @@ namespace QLCF.Forms
             lblTienKhachDuaVal.Text = DinhDangTien(_tienKhachDua);
             lblTienTraLaiVal.Text = DinhDangTien(_tienTraLai);
 
-            // Tinh chỉnh chiều cao Form linh hoạt theo hóa đơn (Tối đa 85% chiều cao màn hình)
-            int requiredClientHeight = pnlHeader.Height + pnlMainScroll.Padding.Top + pnlPaper.Height + pnlMainScroll.Padding.Bottom + pnlBottom.Height;
-            int maxClientHeight = (int)(Screen.PrimaryScreen.WorkingArea.Height * 0.85);
-            this.ClientSize = new System.Drawing.Size(this.ClientSize.Width, Math.Min(maxClientHeight, requiredClientHeight));
+            // Dùng sự kiện Shown để tính chiều cao SAU KHI WinForms layout xong
+            this.Shown += FrmXemTruocBill_Shown;
 
-            // Kích hoạt tính năng cuộn chuột mượt mà và căn giữa tờ bill
+            // Gắn cuộn chuột vào Form và pnlMainScroll
+            this.MouseWheel += OnFormMouseWheel;
+            pnlMainScroll.MouseWheel += OnFormMouseWheel;
+        }
+
+        private void FrmXemTruocBill_Shown(object sender, EventArgs e)
+        {
+            // Tính chiều cao thực tế của pnlPaper sau khi WinForms đã layout xong
+            // Cách đúng: lấy Bottom của control thấp nhất trong pnlPaper
+            int maxBottom = 0;
+            foreach (Control c in pnlPaper.Controls)
+            {
+                if (c.Visible && c.Bottom > maxBottom)
+                    maxBottom = c.Bottom;
+            }
+            int paperHeight = maxBottom + pnlPaper.Padding.Bottom;
+            pnlPaper.Height = Math.Max(paperHeight, 500);
+
+            // Tính chiều cao lý tưởng của Form (tối đa 85% màn hình)
+            int ideal = pnlHeader.Height + pnlMainScroll.Padding.Top + pnlPaper.Height + pnlMainScroll.Padding.Bottom + pnlBottom.Height;
+            int maxH = (int)(Screen.PrimaryScreen.WorkingArea.Height * 0.85);
+            this.ClientSize = new System.Drawing.Size(this.ClientSize.Width, Math.Min(ideal, maxH));
+
             CenterPaperCard();
             pnlMainScroll.Resize += (s, ev) => CenterPaperCard();
             pnlMainScroll.Focus();
-            AttachMouseWheelScroll(pnlPaper);
+        }
+
+        private void OnFormMouseWheel(object sender, MouseEventArgs e)
+        {
+            if (pnlMainScroll == null) return;
+            int step = e.Delta > 0 ? -80 : 80;
+            int newPos = Math.Abs(pnlMainScroll.AutoScrollPosition.Y) + step;
+            if (newPos < 0) newPos = 0;
+            int max = pnlMainScroll.VerticalScroll.Maximum - pnlMainScroll.ClientSize.Height + pnlMainScroll.Padding.Bottom;
+            if (max < 0) max = 0;
+            if (newPos > max) newPos = max;
+            pnlMainScroll.AutoScrollPosition = new System.Drawing.Point(0, newPos);
         }
 
         private void CenterPaperCard()
@@ -152,6 +169,11 @@ namespace QLCF.Forms
                         // Đảm bảo không cuộn quá giới hạn trên và dưới
                         if (newPos < 0) newPos = 0;
                         
+                        // Tính toán giới hạn cuộn dưới
+                        int maxScroll = pnlMainScroll.VerticalScroll.Maximum - pnlMainScroll.ClientSize.Height;
+                        if (maxScroll < 0) maxScroll = 0;
+                        if (newPos > maxScroll) newPos = maxScroll;
+
                         pnlMainScroll.AutoScrollPosition = new System.Drawing.Point(0, newPos);
                     }
                 };

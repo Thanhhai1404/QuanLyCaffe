@@ -42,6 +42,7 @@ namespace QLCF.Forms
             this.btnHoaDon = new System.Windows.Forms.Button();
             this.btnNhanVien = new System.Windows.Forms.Button();
             this.btnKhuVucBan = new System.Windows.Forms.Button();
+            this.btnKho = new System.Windows.Forms.Button();
             this.btnDanhMuc = new System.Windows.Forms.Button();
             this.btnMonAn = new System.Windows.Forms.Button();
             this.btnBanHang = new System.Windows.Forms.Button();
@@ -144,6 +145,7 @@ namespace QLCF.Forms
             this.pnlMenu.Controls.Add(this.btnThongKe);
             this.pnlMenu.Controls.Add(this.btnHoaDon);
             this.pnlMenu.Controls.Add(this.btnNhanVien);
+            this.pnlMenu.Controls.Add(this.btnKho);
             this.pnlMenu.Controls.Add(this.btnKhuVucBan);
             this.pnlMenu.Controls.Add(this.btnDanhMuc);
             this.pnlMenu.Controls.Add(this.btnMonAn);
@@ -258,6 +260,25 @@ namespace QLCF.Forms
             this.btnKhuVucBan.Text = "Khu vực / Bàn";
             this.btnKhuVucBan.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnKhuVucBan.UseVisualStyleBackColor = false;
+            // 
+            // btnKho
+            // 
+            this.btnKho.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(41)))), ((int)(((byte)(59)))));
+            this.btnKho.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnKho.Dock = System.Windows.Forms.DockStyle.Top;
+            this.btnKho.FlatAppearance.BorderSize = 0;
+            this.btnKho.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnKho.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnKho.ForeColor = System.Drawing.Color.White;
+            this.btnKho.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnKho.Location = new System.Drawing.Point(0, 242);
+            this.btnKho.Name = "btnKho";
+            this.btnKho.Padding = new System.Windows.Forms.Padding(25, 0, 0, 0);
+            this.btnKho.Size = new System.Drawing.Size(230, 48);
+            this.btnKho.TabIndex = 10;
+            this.btnKho.Text = "📦 Quản lý kho";
+            this.btnKho.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnKho.UseVisualStyleBackColor = false;
             // 
             // btnDanhMuc
             // 
@@ -394,5 +415,6 @@ namespace QLCF.Forms
         private System.Windows.Forms.Button btnThongKe;
         private System.Windows.Forms.Button btnDoiMatKhau;
         private System.Windows.Forms.Panel pnlNoiDung;
+        private System.Windows.Forms.Button btnKho;
     }
 }

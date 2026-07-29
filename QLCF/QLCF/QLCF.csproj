@@ -139,6 +139,18 @@
     <Compile Include="Forms\FrmQuanLyKhuVucBan.Designer.cs">
       <DependentUpon>FrmQuanLyKhuVucBan.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\FrmQuanLyKho.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmQuanLyKho.Designer.cs">
+      <DependentUpon>FrmQuanLyKho.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\FrmNhapKho.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmNhapKho.Designer.cs">
+      <DependentUpon>FrmNhapKho.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\FrmQuanLyNhanVien.cs">
       <SubType>Form</SubType>
     </Compile>

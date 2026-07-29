@@ -11,3 +11,19 @@ obj/
 packages/
 [Bb]in/
 [Oo]bj/
+
+## Database local files & backups ##
+*.mdf
+*.ldf
+
+## Security & API Secret files ##
+appsettings.json
+appsettings.Development.json
+appsettings.*.json
+!appsettings.Example.json
+*.env
+*.env.*
+*.secret.*
+Secrets.config
+App.secrets.config
+VietQRConfig.local.cs

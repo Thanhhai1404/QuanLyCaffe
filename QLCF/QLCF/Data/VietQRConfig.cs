@@ -26,8 +26,8 @@ namespace QLCF.Data
         public static string SePayApiUrl = "https://my.sepay.vn/userapi/transactions/list";
 
         // Bearer Token lấy từ dashboard SePay (my.sepay.vn > Tích hợp > API Key)
-        // ⚠️ ĐIỀN API KEY THẬT CỦA BẠN VÀO ĐÂY
-        public static string SePayBearerToken = "QGRUYSWMCID5Z9SDCNYEF23FHW3ZOFHYA0SNRVQQJGKK6MCLTILXKBIM074SKO1Z";
+        // ⚠️ ĐIỀN API KEY THẬT CỦA BẠN VÀO ĐÂY (Hoặc lưu trong cấu hình cục bộ)
+        public static string SePayBearerToken = "YOUR_SEPAY_BEARER_TOKEN_HERE";
 
         // Khoảng thời gian polling (ms) - mặc định 3 giây
         public static int PollingIntervalMs = 3000;
