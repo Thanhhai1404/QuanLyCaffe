@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 using QLCF.Data;
 using QLCF.Helpers;
 using QLCF.Models;
@@ -77,6 +78,7 @@ namespace QLCF.Forms
 
             TaiDashboardSummary(tuNgay, denNgay);
             TaiTopMonBanChay(tuNgay, denNgay);
+            TaiBieuDoDoanhThu(tuNgay, denNgay);
         }
 
         private void TaiDashboardSummary(DateTime tuNgay, DateTime denNgay)
@@ -147,6 +149,9 @@ namespace QLCF.Forms
 
                         dgvTopMon.AutoGenerateColumns = false;
                         dgvTopMon.DataSource = dt;
+
+                        // Nạp dữ liệu vào Biểu đồ Tròn (Pie/Doughnut Chart)
+                        VeBieuDoTopMon(dt);
                     }
                 }
             }
@@ -159,6 +164,138 @@ namespace QLCF.Forms
                     MessageBoxIcon.Error
                 );
             }
+        }
+
+        private void TaiBieuDoDoanhThu(DateTime tuNgay, DateTime denNgay)
+        {
+            try
+            {
+                using (SqlConnection conn = Db.CreateConnection())
+                {
+                    string sql = @"
+                        SELECT CAST(GioVao AS DATE) AS Ngay, SUM(TongTien) AS DoanhThu
+                        FROM dbo.vw_LichSuHoaDon
+                        WHERE CAST(GioVao AS DATE) >= @TuNgay 
+                          AND CAST(GioVao AS DATE) <= @DenNgay 
+                          AND TrangThai = 1
+                        GROUP BY CAST(GioVao AS DATE)
+                        ORDER BY Ngay ASC";
+
+                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.Add("@TuNgay", SqlDbType.Date).Value = tuNgay;
+                        cmd.Parameters.Add("@DenNgay", SqlDbType.Date).Value = denNgay;
+
+                        conn.Open();
+                        DataTable dt = new DataTable();
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                        {
+                            da.Fill(dt);
+                        }
+
+                        VeBieuDoCotDoanhThu(dt);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Lỗi vẽ biểu đồ doanh thu: " + ex.Message);
+            }
+        }
+
+        private void VeBieuDoCotDoanhThu(DataTable dt)
+        {
+            chartDoanhThu.Series.Clear();
+            chartDoanhThu.ChartAreas.Clear();
+
+            ChartArea area = new ChartArea("AreaDoanhThu");
+            area.AxisX.MajorGrid.LineColor = Color.FromArgb(241, 245, 249);
+            area.AxisY.MajorGrid.LineColor = Color.FromArgb(241, 245, 249);
+            area.AxisX.LabelStyle.Font = new Font("Segoe UI", 8.5f);
+            area.AxisY.LabelStyle.Font = new Font("Segoe UI", 8.5f);
+            area.AxisY.LabelStyle.Format = "#,##0 đ";
+            chartDoanhThu.ChartAreas.Add(area);
+
+            Series series = new Series("DoanhThuSeries")
+            {
+                ChartType = SeriesChartType.Column,
+                Color = Color.FromArgb(37, 99, 235),
+                IsValueShownAsLabel = true,
+                Font = new Font("Segoe UI", 8.5f, FontStyle.Bold),
+                BackGradientStyle = GradientStyle.TopBottom,
+                BackSecondaryColor = Color.FromArgb(96, 165, 250)
+            };
+
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                foreach (DataRow row in dt.Rows)
+                {
+                    DateTime ngay = Convert.ToDateTime(row["Ngay"]);
+                    decimal doanhThu = Convert.ToDecimal(row["DoanhThu"]);
+
+                    int ptIndex = series.Points.AddXY(ngay.ToString("dd/MM"), doanhThu);
+                    DataPoint pt = series.Points[ptIndex];
+                    pt.Label = doanhThu >= 1000000 ? (doanhThu / 1000000m).ToString("0.#") + "M" : (doanhThu / 1000m).ToString("0") + "k";
+                    pt.ToolTip = $"{ngay:dd/MM/yyyy}: {doanhThu:N0} VNĐ";
+                }
+            }
+
+            chartDoanhThu.Series.Add(series);
+        }
+
+        private void VeBieuDoTopMon(DataTable dt)
+        {
+            chartTopMon.Series.Clear();
+            chartTopMon.ChartAreas.Clear();
+            chartTopMon.Legends.Clear();
+
+            ChartArea area = new ChartArea("AreaTopMon");
+            chartTopMon.ChartAreas.Add(area);
+
+            Legend legend = new Legend("LegendTopMon")
+            {
+                Docking = Docking.Right,
+                Font = new Font("Segoe UI", 8.5f),
+                BackColor = Color.Transparent
+            };
+            chartTopMon.Legends.Add(legend);
+
+            Series series = new Series("TopMonSeries")
+            {
+                ChartType = SeriesChartType.Doughnut,
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                IsValueShownAsLabel = true,
+                Label = "#PERCENT{P0}"
+            };
+
+            // Modern color palette for Pie chart
+            Color[] sliceColors = new Color[]
+            {
+                Color.FromArgb(16, 185, 129),  // Emerald Green
+                Color.FromArgb(59, 130, 246),  // Royal Blue
+                Color.FromArgb(245, 158, 11),  // Amber
+                Color.FromArgb(236, 72, 153),  // Pink
+                Color.FromArgb(139, 92, 246)   // Purple
+            };
+
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                int colorIndex = 0;
+                foreach (DataRow row in dt.Rows)
+                {
+                    string tenMon = row["TenMon"].ToString();
+                    int soLuong = Convert.ToInt32(row["TongSoLuong"]);
+
+                    int ptIndex = series.Points.AddXY(tenMon, soLuong);
+                    DataPoint pt = series.Points[ptIndex];
+                    pt.Color = sliceColors[colorIndex % sliceColors.Length];
+                    pt.LegendText = $"{tenMon} ({soLuong})";
+                    pt.ToolTip = $"{tenMon}: {soLuong} ly/món";
+                    colorIndex++;
+                }
+            }
+
+            chartTopMon.Series.Add(series);
         }
 
         private async void btnXuatExcel_Click(object sender, EventArgs e)

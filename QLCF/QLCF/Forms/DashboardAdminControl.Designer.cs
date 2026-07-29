@@ -55,6 +55,11 @@ namespace QLCF.Forms
             this.pnlCard1Accent = new System.Windows.Forms.Panel();
             this.lblDoanhThuVal = new System.Windows.Forms.Label();
             this.lblCard1Title = new System.Windows.Forms.Label();
+            this.pnlChartsContainer = new System.Windows.Forms.TableLayoutPanel();
+            this.grpChartDoanhThu = new System.Windows.Forms.GroupBox();
+            this.chartDoanhThu = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.grpChartTopMon = new System.Windows.Forms.GroupBox();
+            this.chartTopMon = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.pnlMiddle = new System.Windows.Forms.TableLayoutPanel();
             this.grpTinhTrangBan = new System.Windows.Forms.GroupBox();
             this.pnlStatusGrid = new System.Windows.Forms.TableLayoutPanel();
@@ -425,6 +430,69 @@ namespace QLCF.Forms
             this.lblCard1Title.TabIndex = 1;
             this.lblCard1Title.Text = "DOANH THU";
             // 
+            // pnlChartsContainer
+            // 
+            this.pnlChartsContainer.ColumnCount = 2;
+            this.pnlChartsContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 56F));
+            this.pnlChartsContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 44F));
+            this.pnlChartsContainer.Controls.Add(this.grpChartDoanhThu, 0, 0);
+            this.pnlChartsContainer.Controls.Add(this.grpChartTopMon, 1, 0);
+            this.pnlChartsContainer.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlChartsContainer.Location = new System.Drawing.Point(0, 153);
+            this.pnlChartsContainer.Name = "pnlChartsContainer";
+            this.pnlChartsContainer.RowCount = 1;
+            this.pnlChartsContainer.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.pnlChartsContainer.Size = new System.Drawing.Size(930, 260);
+            this.pnlChartsContainer.TabIndex = 2;
+            // 
+            // grpChartDoanhThu
+            // 
+            this.grpChartDoanhThu.BackColor = System.Drawing.Color.White;
+            this.grpChartDoanhThu.Controls.Add(this.chartDoanhThu);
+            this.grpChartDoanhThu.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grpChartDoanhThu.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.grpChartDoanhThu.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
+            this.grpChartDoanhThu.Location = new System.Drawing.Point(0, 8);
+            this.grpChartDoanhThu.Margin = new System.Windows.Forms.Padding(0, 8, 5, 5);
+            this.grpChartDoanhThu.Name = "grpChartDoanhThu";
+            this.grpChartDoanhThu.Padding = new System.Windows.Forms.Padding(10);
+            this.grpChartDoanhThu.Size = new System.Drawing.Size(515, 247);
+            this.grpChartDoanhThu.TabIndex = 0;
+            this.grpChartDoanhThu.TabStop = false;
+            this.grpChartDoanhThu.Text = "BIỂU ĐỒ DOANH THU THEO NGÀY";
+            // 
+            // chartDoanhThu
+            // 
+            this.chartDoanhThu.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.chartDoanhThu.Location = new System.Drawing.Point(10, 32);
+            this.chartDoanhThu.Name = "chartDoanhThu";
+            this.chartDoanhThu.Size = new System.Drawing.Size(495, 205);
+            this.chartDoanhThu.TabIndex = 0;
+            // 
+            // grpChartTopMon
+            // 
+            this.grpChartTopMon.BackColor = System.Drawing.Color.White;
+            this.grpChartTopMon.Controls.Add(this.chartTopMon);
+            this.grpChartTopMon.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grpChartTopMon.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.grpChartTopMon.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
+            this.grpChartTopMon.Location = new System.Drawing.Point(525, 8);
+            this.grpChartTopMon.Margin = new System.Windows.Forms.Padding(5, 8, 0, 5);
+            this.grpChartTopMon.Name = "grpChartTopMon";
+            this.grpChartTopMon.Padding = new System.Windows.Forms.Padding(10);
+            this.grpChartTopMon.Size = new System.Drawing.Size(405, 247);
+            this.grpChartTopMon.TabIndex = 1;
+            this.grpChartTopMon.TabStop = false;
+            this.grpChartTopMon.Text = "CƠ CẤU MÓN BÁN CHẠY";
+            // 
+            // chartTopMon
+            // 
+            this.chartTopMon.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.chartTopMon.Location = new System.Drawing.Point(10, 32);
+            this.chartTopMon.Name = "chartTopMon";
+            this.chartTopMon.Size = new System.Drawing.Size(385, 205);
+            this.chartTopMon.TabIndex = 0;
+            // 
             // pnlMiddle
             // 
             this.pnlMiddle.ColumnCount = 2;
@@ -433,7 +501,7 @@ namespace QLCF.Forms
             this.pnlMiddle.Controls.Add(this.grpTinhTrangBan, 1, 0);
             this.pnlMiddle.Controls.Add(this.grpTopMon, 0, 0);
             this.pnlMiddle.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pnlMiddle.Location = new System.Drawing.Point(0, 153);
+            this.pnlMiddle.Location = new System.Drawing.Point(0, 413);
             this.pnlMiddle.Name = "pnlMiddle";
             this.pnlMiddle.RowCount = 1;
             this.pnlMiddle.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -764,6 +832,7 @@ namespace QLCF.Forms
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(241)))), ((int)(((byte)(245)))), ((int)(((byte)(249)))));
             this.Controls.Add(this.grpThaoTacNhanh);
             this.Controls.Add(this.pnlMiddle);
+            this.Controls.Add(this.pnlChartsContainer);
             this.Controls.Add(this.pnlCardsContainer);
             this.Controls.Add(this.pnlTopHeader);
             this.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -814,6 +883,11 @@ namespace QLCF.Forms
         private System.Windows.Forms.DateTimePicker dtpDenNgay;
         private System.Windows.Forms.Button btnTaiLaiDashboard;
         private System.Windows.Forms.TableLayoutPanel pnlCardsContainer;
+        private System.Windows.Forms.TableLayoutPanel pnlChartsContainer;
+        private System.Windows.Forms.GroupBox grpChartDoanhThu;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chartDoanhThu;
+        private System.Windows.Forms.GroupBox grpChartTopMon;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chartTopMon;
         private System.Windows.Forms.Panel pnlCard1;
         private System.Windows.Forms.Panel pnlCard1Accent;
         private System.Windows.Forms.Label lblCard1Title;

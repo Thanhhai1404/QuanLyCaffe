@@ -36,6 +36,7 @@ namespace QLCF.Forms
             this.pnlHeader = new System.Windows.Forms.Panel();
             this.lblTieuDe = new System.Windows.Forms.Label();
             this.pnlFilter = new System.Windows.Forms.Panel();
+            this.btnXemChiTiet = new System.Windows.Forms.Button();
             this.btnDong = new System.Windows.Forms.Button();
             this.btnLamMoi = new System.Windows.Forms.Button();
             this.btnLoc = new System.Windows.Forms.Button();
@@ -92,6 +93,7 @@ namespace QLCF.Forms
             // pnlFilter
             // 
             this.pnlFilter.BackColor = System.Drawing.Color.White;
+            this.pnlFilter.Controls.Add(this.btnXemChiTiet);
             this.pnlFilter.Controls.Add(this.btnDong);
             this.pnlFilter.Controls.Add(this.btnLamMoi);
             this.pnlFilter.Controls.Add(this.btnLoc);
@@ -109,6 +111,21 @@ namespace QLCF.Forms
             this.pnlFilter.Size = new System.Drawing.Size(1200, 75);
             this.pnlFilter.TabIndex = 1;
             // 
+            // btnXemChiTiet
+            // 
+            this.btnXemChiTiet.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(217)))), ((int)(((byte)(119)))), ((int)(((byte)(6)))));
+            this.btnXemChiTiet.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnXemChiTiet.FlatAppearance.BorderSize = 0;
+            this.btnXemChiTiet.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnXemChiTiet.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnXemChiTiet.ForeColor = System.Drawing.Color.White;
+            this.btnXemChiTiet.Location = new System.Drawing.Point(850, 20);
+            this.btnXemChiTiet.Name = "btnXemChiTiet";
+            this.btnXemChiTiet.Size = new System.Drawing.Size(125, 35);
+            this.btnXemChiTiet.TabIndex = 11;
+            this.btnXemChiTiet.Text = "👁️ Xem chi tiết";
+            this.btnXemChiTiet.UseVisualStyleBackColor = false;
+            // 
             // btnDong
             // 
             this.btnDong.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -118,9 +135,9 @@ namespace QLCF.Forms
             this.btnDong.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnDong.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnDong.ForeColor = System.Drawing.Color.White;
-            this.btnDong.Location = new System.Drawing.Point(1085, 20);
+            this.btnDong.Location = new System.Drawing.Point(1110, 20);
             this.btnDong.Name = "btnDong";
-            this.btnDong.Size = new System.Drawing.Size(100, 35);
+            this.btnDong.Size = new System.Drawing.Size(80, 35);
             this.btnDong.TabIndex = 10;
             this.btnDong.Text = "❌ Đóng";
             this.btnDong.UseVisualStyleBackColor = false;
@@ -133,7 +150,7 @@ namespace QLCF.Forms
             this.btnLamMoi.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnLamMoi.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnLamMoi.ForeColor = System.Drawing.Color.White;
-            this.btnLamMoi.Location = new System.Drawing.Point(965, 20);
+            this.btnLamMoi.Location = new System.Drawing.Point(985, 20);
             this.btnLamMoi.Name = "btnLamMoi";
             this.btnLamMoi.Size = new System.Drawing.Size(110, 35);
             this.btnLamMoi.TabIndex = 9;
@@ -148,9 +165,9 @@ namespace QLCF.Forms
             this.btnLoc.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnLoc.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnLoc.ForeColor = System.Drawing.Color.White;
-            this.btnLoc.Location = new System.Drawing.Point(850, 20);
+            this.btnLoc.Location = new System.Drawing.Point(755, 20);
             this.btnLoc.Name = "btnLoc";
-            this.btnLoc.Size = new System.Drawing.Size(105, 35);
+            this.btnLoc.Size = new System.Drawing.Size(85, 35);
             this.btnLoc.TabIndex = 8;
             this.btnLoc.Text = "🔍 Lọc";
             this.btnLoc.UseVisualStyleBackColor = false;
@@ -457,6 +474,7 @@ namespace QLCF.Forms
         private System.Windows.Forms.Label lblTimMaHD;
         private System.Windows.Forms.TextBox txtTimMaHD;
         private System.Windows.Forms.Button btnLoc;
+        private System.Windows.Forms.Button btnXemChiTiet;
         private System.Windows.Forms.Button btnLamMoi;
         private System.Windows.Forms.Button btnDong;
         private System.Windows.Forms.Panel pnlContent;
