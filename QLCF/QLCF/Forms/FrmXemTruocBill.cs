@@ -21,6 +21,7 @@ namespace QLCF.Forms
         private readonly decimal _tienKhachDua;
         private readonly decimal _tienTraLai;
         private readonly string _tenThuNgan;
+        private readonly string _maKhuyenMai;
         private readonly List<ChiTietHoaDonModel> _chiTietList;
 
         public FrmXemTruocBill(
@@ -35,6 +36,7 @@ namespace QLCF.Forms
             decimal tienKhachDua,
             decimal tienTraLai,
             string tenThuNgan,
+            string maKhuyenMai,
             List<ChiTietHoaDonModel> chiTietList)
         {
             InitializeComponent();
@@ -57,10 +59,11 @@ namespace QLCF.Forms
                 _phuongThuc = "Tiền mặt";
             }
 
-            _tienKhachDua = tienKhachDua;
-            _tienTraLai = tienTraLai;
-            _tenThuNgan = string.IsNullOrWhiteSpace(tenThuNgan) ? "Thu ngân" : tenThuNgan;
-            _chiTietList = chiTietList ?? new List<ChiTietHoaDonModel>();
+        _tienKhachDua = tienKhachDua;
+        _tienTraLai = tienTraLai;
+        _tenThuNgan = string.IsNullOrWhiteSpace(tenThuNgan) ? "Thu ngân" : tenThuNgan;
+        _maKhuyenMai = maKhuyenMai;
+        _chiTietList = chiTietList ?? new List<ChiTietHoaDonModel>();
 
             this.Load += FrmXemTruocBill_Load;
             this.btnXuatBillHoanTat.Click += BtnXuatBillHoanTat_Click;
@@ -85,16 +88,6 @@ namespace QLCF.Forms
             dgvMonAn.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders;
             dgvMonAn.DataSource = _chiTietList;
 
-            // Tính chiều cao động cho Grid danh sách món ăn dựa trên các dòng đã wrap text
-            dgvMonAn.AutoResizeRows(DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders);
-            int totalRowHeights = 0;
-            foreach (DataGridViewRow row in dgvMonAn.Rows)
-            {
-                totalRowHeights += row.Height;
-            }
-            int totalGridHeight = dgvMonAn.ColumnHeadersHeight + totalRowHeights + 8;
-            dgvMonAn.Height = Math.Max(60, totalGridHeight);
-
             // Tắt AutoSize để tự quản lý chiều cao
             pnlPaper.AutoSize = false;
 
@@ -116,6 +109,16 @@ namespace QLCF.Forms
 
         private void FrmXemTruocBill_Shown(object sender, EventArgs e)
         {
+            // Tính chiều cao động cho Grid danh sách món ăn sau khi layout đã có width chuẩn
+            dgvMonAn.AutoResizeRows(DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders);
+            int totalRowHeights = 0;
+            foreach (DataGridViewRow row in dgvMonAn.Rows)
+            {
+                totalRowHeights += row.Height;
+            }
+            int totalGridHeight = dgvMonAn.ColumnHeadersHeight + totalRowHeights + 8;
+            dgvMonAn.Height = Math.Max(60, totalGridHeight);
+
             // Tính chiều cao thực tế của pnlPaper sau khi WinForms đã layout xong
             // Cách đúng: lấy Bottom của control thấp nhất trong pnlPaper
             int maxBottom = 0;
@@ -214,43 +217,56 @@ namespace QLCF.Forms
                             cmd.Parameters.Add("@GiamGia", SqlDbType.Int).Value = _giamGiaPercent;
                             cmd.Parameters.Add("@PhuongThucThanhToan", SqlDbType.NVarChar, 50).Value = phuongThucChuan;
                             cmd.Parameters.Add("@TienKhachDua", SqlDbType.Decimal).Value = (object)_tienKhachDua ?? DBNull.Value;
+                            cmd.Parameters.Add("@MaKhuyenMai", SqlDbType.NVarChar, 50).Value = (object)_maKhuyenMai ?? DBNull.Value;
 
                             cmd.ExecuteNonQuery();
                         }
                     }
-                    catch (SqlException ex) when (ex.Number == 2812) // Fallback nếu DB chưa cài Stored Procedure
+                    catch (SqlException ex) when (ex.Number == 2812 || ex.Number == 8144 || ex.Number == 8146 || ex.Message.Contains("too many arguments")) // Fallback nếu DB chưa cài hoặc chưa cập nhật Stored Procedure
                     {
                         using (SqlTransaction tran = conn.BeginTransaction())
                         {
-                            string sqlHoaDon = @"UPDATE dbo.HoaDon 
-                                SET TrangThai = 1, 
-                                    NgayThanhToan = GETDATE(), 
-                                    TongTienGoc = @TongTienGoc, 
-                                    PhanTramGiamGia = @GiamGia, 
-                                    SoTienGiam = @SoTienGiam, 
-                                    TongTienThanhToan = @TongTienThanhToan, 
-                                    PhuongThucThanhToan = @PhuongThucThanhToan, 
-                                    TienKhachDua = @TienKhachDua, 
-                                    TienTraLai = @TienTraLai,
-                                    MaNVThanhToan = @MaNV 
-                                WHERE MaHD = @MaHD";
-
-                            using (SqlCommand cmdHD = new SqlCommand(sqlHoaDon, conn, tran))
+                            HashSet<string> hdCols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                            using (SqlCommand cmdCheck = new SqlCommand("SELECT name FROM sys.columns WHERE object_id = OBJECT_ID('dbo.HoaDon')", conn, tran))
                             {
-                                cmdHD.Parameters.Add("@TongTienGoc", SqlDbType.Decimal).Value = _tongTienGoc;
-                                cmdHD.Parameters.Add("@GiamGia", SqlDbType.Int).Value = _giamGiaPercent;
-                                cmdHD.Parameters.Add("@SoTienGiam", SqlDbType.Decimal).Value = _soTienGiam;
-                                cmdHD.Parameters.Add("@TongTienThanhToan", SqlDbType.Decimal).Value = _tongCanThanhToan;
-                                cmdHD.Parameters.Add("@PhuongThucThanhToan", SqlDbType.NVarChar, 50).Value = phuongThucChuan;
-                                cmdHD.Parameters.Add("@TienKhachDua", SqlDbType.Decimal).Value = _tienKhachDua;
-                                cmdHD.Parameters.Add("@TienTraLai", SqlDbType.Decimal).Value = _tienTraLai;
-                                cmdHD.Parameters.Add("@MaNV", SqlDbType.Int).Value = UserSession.MaNV;
+                                using (SqlDataReader dr = cmdCheck.ExecuteReader())
+                                {
+                                    while (dr.Read()) hdCols.Add(dr.GetString(0));
+                                }
+                            }
+
+                            List<string> setClauses = new List<string> { "TrangThai = 1" };
+                            using (SqlCommand cmdHD = new SqlCommand("", conn, tran))
+                            {
+                                if (hdCols.Contains("NgayThanhToan")) setClauses.Add("NgayThanhToan = GETDATE()");
+                                if (hdCols.Contains("GioRa")) setClauses.Add("GioRa = GETDATE()");
+
+                                if (hdCols.Contains("TongTienGoc")) { setClauses.Add("TongTienGoc = @TongTienGoc"); cmdHD.Parameters.Add("@TongTienGoc", SqlDbType.Decimal).Value = _tongTienGoc; }
+
+                                if (hdCols.Contains("PhanTramGiamGia")) { setClauses.Add("PhanTramGiamGia = @GiamGia"); cmdHD.Parameters.Add("@GiamGia", SqlDbType.Int).Value = _giamGiaPercent; }
+                                if (hdCols.Contains("GiamGia")) { setClauses.Add("GiamGia = @GiamGia"); if (!cmdHD.Parameters.Contains("@GiamGia")) cmdHD.Parameters.Add("@GiamGia", SqlDbType.Int).Value = _giamGiaPercent; }
+
+                                if (hdCols.Contains("SoTienGiam")) { setClauses.Add("SoTienGiam = @SoTienGiam"); cmdHD.Parameters.Add("@SoTienGiam", SqlDbType.Decimal).Value = _soTienGiam; }
+
+                                if (hdCols.Contains("TongTienThanhToan")) { setClauses.Add("TongTienThanhToan = @TongTienThanhToan"); cmdHD.Parameters.Add("@TongTienThanhToan", SqlDbType.Decimal).Value = _tongCanThanhToan; }
+                                if (hdCols.Contains("TongTien")) { setClauses.Add("TongTien = @TongTienThanhToan"); if (!cmdHD.Parameters.Contains("@TongTienThanhToan")) cmdHD.Parameters.Add("@TongTienThanhToan", SqlDbType.Decimal).Value = _tongCanThanhToan; }
+
+                                if (hdCols.Contains("PhuongThucThanhToan")) { setClauses.Add("PhuongThucThanhToan = @PhuongThucThanhToan"); cmdHD.Parameters.Add("@PhuongThucThanhToan", SqlDbType.NVarChar, 50).Value = phuongThucChuan; }
+                                if (hdCols.Contains("TienKhachDua")) { setClauses.Add("TienKhachDua = @TienKhachDua"); cmdHD.Parameters.Add("@TienKhachDua", SqlDbType.Decimal).Value = _tienKhachDua; }
+                                if (hdCols.Contains("TienTraLai")) { setClauses.Add("TienTraLai = @TienTraLai"); cmdHD.Parameters.Add("@TienTraLai", SqlDbType.Decimal).Value = _tienTraLai; }
+
+                                if (hdCols.Contains("MaNVThanhToan")) { setClauses.Add("MaNVThanhToan = @MaNV"); cmdHD.Parameters.Add("@MaNV", SqlDbType.Int).Value = UserSession.MaNV; }
+                                else if (hdCols.Contains("MaNV")) { setClauses.Add("MaNV = @MaNV"); cmdHD.Parameters.Add("@MaNV", SqlDbType.Int).Value = UserSession.MaNV; }
+
+                                if (hdCols.Contains("MaKhuyenMai")) { setClauses.Add("MaKhuyenMai = @MaKhuyenMai"); cmdHD.Parameters.Add("@MaKhuyenMai", SqlDbType.NVarChar, 50).Value = (object)_maKhuyenMai ?? DBNull.Value; }
+
+                                cmdHD.CommandText = $"UPDATE dbo.HoaDon SET {string.Join(", ", setClauses)} WHERE MaHD = @MaHD";
                                 cmdHD.Parameters.Add("@MaHD", SqlDbType.Int).Value = _maHD;
                                 cmdHD.ExecuteNonQuery();
                             }
 
                             string sqlBan = @"UPDATE dbo.Ban 
-                                SET DangSuDung = 0, 
+                                SET DangSuDung = 1, 
                                     TrangThai = N'Trống' 
                                 WHERE MaBan = @MaBan";
 
@@ -258,6 +274,18 @@ namespace QLCF.Forms
                             {
                                 cmdBan.Parameters.Add("@MaBan", SqlDbType.Int).Value = _maBan;
                                 cmdBan.ExecuteNonQuery();
+                            }
+
+                            if (!string.IsNullOrEmpty(_maKhuyenMai))
+                            {
+                                string sqlKM = @"UPDATE dbo.KhuyenMai 
+                                                 SET SoLuotConLai = SoLuotConLai - 1 
+                                                 WHERE MaKhuyenMai = @MaKhuyenMai AND SoLuotConLai IS NOT NULL AND SoLuotConLai > 0";
+                                using (SqlCommand cmdKM = new SqlCommand(sqlKM, conn, tran))
+                                {
+                                    cmdKM.Parameters.Add("@MaKhuyenMai", SqlDbType.NVarChar, 50).Value = _maKhuyenMai;
+                                    cmdKM.ExecuteNonQuery();
+                                }
                             }
 
                             tran.Commit();

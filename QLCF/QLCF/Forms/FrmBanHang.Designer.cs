@@ -77,6 +77,8 @@ namespace QLCF.Forms
             this.btnCapNhatSoLuong = new System.Windows.Forms.Button();
             this.btnXoaMonKhoiHoaDon = new System.Windows.Forms.Button();
             this.btnThanhToan = new System.Windows.Forms.Button();
+            this.cboKhuyenMai = new System.Windows.Forms.ComboBox();
+            this.chkApDungKhuyenMai = new System.Windows.Forms.CheckBox();
             this.pnlThongTinBanHeader = new System.Windows.Forms.Panel();
             this.btnGopBan = new System.Windows.Forms.Button();
             this.btnChuyenBan = new System.Windows.Forms.Button();
@@ -414,12 +416,14 @@ namespace QLCF.Forms
             this.pnlThemMonAction.Controls.Add(this.lblSoLuongCapNhatLabel);
             this.pnlThemMonAction.Controls.Add(this.nudSoLuongCapNhat);
             this.pnlThemMonAction.Controls.Add(this.btnCapNhatSoLuong);
+            this.pnlThemMonAction.Controls.Add(this.cboKhuyenMai);
+            this.pnlThemMonAction.Controls.Add(this.chkApDungKhuyenMai);
             this.pnlThemMonAction.Controls.Add(this.btnThanhToan);
             this.pnlThemMonAction.Controls.Add(this.btnXoaMonKhoiHoaDon);
             this.pnlThemMonAction.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnlThemMonAction.Location = new System.Drawing.Point(8, 444);
+            this.pnlThemMonAction.Location = new System.Drawing.Point(8, 404);
             this.pnlThemMonAction.Name = "pnlThemMonAction";
-            this.pnlThemMonAction.Size = new System.Drawing.Size(442, 238);
+            this.pnlThemMonAction.Size = new System.Drawing.Size(442, 278);
             this.pnlThemMonAction.TabIndex = 2;
             // 
             // lblMonDangChon
@@ -580,6 +584,31 @@ namespace QLCF.Forms
             this.lblTongTamTinh.Text = "Tổng: 0 đ";
             this.lblTongTamTinh.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // cboKhuyenMai
+            // 
+            this.cboKhuyenMai.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.cboKhuyenMai.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboKhuyenMai.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cboKhuyenMai.FormattingEnabled = true;
+            this.cboKhuyenMai.Location = new System.Drawing.Point(10, 180);
+            this.cboKhuyenMai.Name = "cboKhuyenMai";
+            this.cboKhuyenMai.Size = new System.Drawing.Size(250, 29);
+            this.cboKhuyenMai.TabIndex = 13;
+            // 
+            // chkApDungKhuyenMai
+            // 
+            this.chkApDungKhuyenMai.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.chkApDungKhuyenMai.AutoSize = true;
+            this.chkApDungKhuyenMai.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkApDungKhuyenMai.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(217)))), ((int)(((byte)(119)))), ((int)(((byte)(6)))));
+            this.chkApDungKhuyenMai.Location = new System.Drawing.Point(270, 181);
+            this.chkApDungKhuyenMai.Name = "chkApDungKhuyenMai";
+            this.chkApDungKhuyenMai.Size = new System.Drawing.Size(130, 25);
+            this.chkApDungKhuyenMai.TabIndex = 14;
+            this.chkApDungKhuyenMai.Text = "Áp dụng KM";
+            this.chkApDungKhuyenMai.UseVisualStyleBackColor = true;
+            // 
             // btnThanhToan
             // 
             this.btnThanhToan.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -590,10 +619,10 @@ namespace QLCF.Forms
             this.btnThanhToan.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnThanhToan.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnThanhToan.ForeColor = System.Drawing.Color.White;
-            this.btnThanhToan.Location = new System.Drawing.Point(10, 180);
+            this.btnThanhToan.Location = new System.Drawing.Point(10, 220);
             this.btnThanhToan.Name = "btnThanhToan";
             this.btnThanhToan.Size = new System.Drawing.Size(420, 44);
-            this.btnThanhToan.TabIndex = 12;
+            this.btnThanhToan.TabIndex = 15;
             this.btnThanhToan.Text = "🧾 XUẤT BILL & THANH TOÁN";
             this.btnThanhToan.UseVisualStyleBackColor = false;
             // 
@@ -888,5 +917,7 @@ namespace QLCF.Forms
         private System.Windows.Forms.DataGridViewTextBoxColumn colThanhTien;
         private System.Windows.Forms.DataGridViewTextBoxColumn colGhiChu;
         private System.Windows.Forms.DataGridViewButtonColumn colXoa;
+        private System.Windows.Forms.ComboBox cboKhuyenMai;
+        private System.Windows.Forms.CheckBox chkApDungKhuyenMai;
     }
 }

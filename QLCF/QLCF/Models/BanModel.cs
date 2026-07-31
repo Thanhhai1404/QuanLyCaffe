@@ -62,6 +62,66 @@ namespace QLCF.Models
         public decimal GiaPhuThu { get; set; } // 0, 5000, 10000
     }
 
+    public class KhuyenMaiModel
+    {
+        public int MaKM { get; set; }
+        public string TenKM { get; set; }
+        public string MaKhuyenMai { get; set; }
+        public int LoaiGiamGia { get; set; }        // 0 = %, 1 = VNĐ
+        public decimal GiaTriGiam { get; set; }
+        public decimal? GiamToiDa { get; set; }
+        public decimal DieuKienToiThieu { get; set; }
+        public DateTime NgayBatDau { get; set; }
+        public DateTime NgayKetThuc { get; set; }
+        public int? SoLuotConLai { get; set; }
+        public bool TrangThai { get; set; }
+        public string MoTa { get; set; }
+
+        /// <summary>
+        /// Tính số tiền giảm thực tế cho một hóa đơn
+        /// </summary>
+        public decimal TinhSoTienGiam(decimal tongTienGoc)
+        {
+            if (tongTienGoc < DieuKienToiThieu) return 0;
+
+            decimal soTienGiam;
+            if (LoaiGiamGia == 0)
+            {
+                // Giảm theo %
+                soTienGiam = tongTienGoc * GiaTriGiam / 100m;
+                if (GiamToiDa.HasValue && soTienGiam > GiamToiDa.Value)
+                    soTienGiam = GiamToiDa.Value;
+            }
+            else
+            {
+                // Giảm trực tiếp VNĐ
+                soTienGiam = GiaTriGiam;
+            }
+
+            // Không giảm nhiều hơn tổng tiền
+            if (soTienGiam > tongTienGoc)
+                soTienGiam = tongTienGoc;
+
+            return soTienGiam;
+        }
+
+        /// <summary>
+        /// Hiển thị mô tả ngắn gọn cho mã KM
+        /// </summary>
+        public string MoTaNgan
+        {
+            get
+            {
+                string loai = LoaiGiamGia == 0
+                    ? $"Giảm {GiaTriGiam:N0}%" + (GiamToiDa.HasValue ? $" (tối đa {GiamToiDa.Value:N0}đ)" : "")
+                    : $"Giảm {GiaTriGiam:N0}đ";
+                string dkien = DieuKienToiThieu > 0 ? $" | Đơn tối thiểu {DieuKienToiThieu:N0}đ" : "";
+                string luot = SoLuotConLai.HasValue ? $" | Còn {SoLuotConLai} lượt" : " | Không giới hạn";
+                return $"{loai}{dkien}{luot}";
+            }
+        }
+    }
+
     public class ChiTietHoaDonModel
     {
         public int MaCTHD { get; set; }

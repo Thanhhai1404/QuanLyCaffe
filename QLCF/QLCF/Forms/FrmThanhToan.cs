@@ -20,6 +20,8 @@ namespace QLCF.Forms
         private readonly int _maBan;
         private readonly string _tenBan;
         private readonly decimal _tongTienGoc;
+        private readonly decimal _soTienKhuyenMai;
+        private readonly string _maKhuyenMaiApDung;
 
         // VietQR Auto-Check fields
         private Timer _timerCheckPaid;
@@ -28,7 +30,7 @@ namespace QLCF.Forms
         private readonly HashSet<long> _initialTxIds = new HashSet<long>();
         private bool _isSnapshotLoaded = false;
 
-        public FrmThanhToan(int maHD, int maBan, string tenBan, decimal tongTienGoc)
+        public FrmThanhToan(int maHD, int maBan, string tenBan, decimal tongTienGoc, decimal soTienKhuyenMai = 0, string maKhuyenMaiApDung = "")
         {
             InitializeComponent();
 
@@ -36,6 +38,8 @@ namespace QLCF.Forms
             _maBan = maBan;
             _tenBan = tenBan;
             _tongTienGoc = tongTienGoc;
+            _soTienKhuyenMai = soTienKhuyenMai;
+            _maKhuyenMaiApDung = maKhuyenMaiApDung;
             _openFormTime = DateTime.Now;
 
             this.Load += FrmThanhToan_Load;
@@ -69,6 +73,11 @@ namespace QLCF.Forms
                 nudGiamGia.Maximum = 10;
             }
             nudGiamGia.Value = 0;
+            
+            if (_soTienKhuyenMai > 0)
+            {
+                lblMaHDInfo.Text += $" | KM: {_maKhuyenMaiApDung}";
+            }
 
             // Load danh sách phương thức thanh toán
             cboPhuongThucThanhToan.Items.Clear();
@@ -76,8 +85,9 @@ namespace QLCF.Forms
             cboPhuongThucThanhToan.Items.Add("Chuyển khoản");
             cboPhuongThucThanhToan.SelectedIndex = 0; // Mặc định là Tiền mặt
 
-            // Mặc định tiền khách đưa bằng tổng tiền gốc
-            nudTienKhachDua.Value = Math.Max(0, _tongTienGoc);
+            // Mặc định tiền khách đưa bằng tổng cần thanh toán (sau khi đã trừ khuyến mãi)
+            decimal initialSoTienGiam = Math.Min(_tongTienGoc, _soTienKhuyenMai);
+            nudTienKhachDua.Value = Math.Max(0, _tongTienGoc - initialSoTienGiam);
 
             TinhToanThanhToan();
         }
@@ -85,7 +95,11 @@ namespace QLCF.Forms
         private void TinhToanThanhToan()
         {
             int giamGia = (int)nudGiamGia.Value;
-            decimal soTienGiam = _tongTienGoc * giamGia / 100m;
+            decimal soTienGiam = (_tongTienGoc * giamGia / 100m) + _soTienKhuyenMai;
+            
+            // Đảm bảo không giảm quá tổng tiền
+            if (soTienGiam > _tongTienGoc) soTienGiam = _tongTienGoc;
+            
             decimal tongCanThanhToan = Math.Max(0, _tongTienGoc - soTienGiam);
 
             lblSoTienGiamVal.Text = DinhDangTien(soTienGiam);
@@ -361,7 +375,8 @@ namespace QLCF.Forms
             if (phuongThuc == "Tiền mặt")
             {
                 int giamGia = (int)nudGiamGia.Value;
-                decimal soTienGiam = _tongTienGoc * giamGia / 100m;
+                decimal soTienGiam = (_tongTienGoc * giamGia / 100m) + _soTienKhuyenMai;
+                if (soTienGiam > _tongTienGoc) soTienGiam = _tongTienGoc;
                 decimal tongCanThanhToan = Math.Max(0, _tongTienGoc - soTienGiam);
                 decimal tienKhachDua = nudTienKhachDua.Value;
 
@@ -400,7 +415,9 @@ namespace QLCF.Forms
             DungTimerCheckPaid();
 
             int giamGia = (int)nudGiamGia.Value;
-            decimal soTienGiam = _tongTienGoc * giamGia / 100m;
+            decimal soTienGiam = (_tongTienGoc * giamGia / 100m) + _soTienKhuyenMai;
+            if (soTienGiam > _tongTienGoc) soTienGiam = _tongTienGoc;
+            
             decimal tongCanThanhToan = Math.Max(0, _tongTienGoc - soTienGiam);
             decimal tienKhachDua = phuongThuc == "Tiền mặt" ? nudTienKhachDua.Value : tongCanThanhToan;
             decimal tienTraLai = phuongThuc == "Tiền mặt" ? Math.Max(0, tienKhachDua - tongCanThanhToan) : 0m;
@@ -421,6 +438,7 @@ namespace QLCF.Forms
                 tienKhachDua,
                 tienTraLai,
                 UserSession.HoTen,
+                _maKhuyenMaiApDung,
                 chiTietList))
             {
                 if (frmBill.ShowDialog(this) == DialogResult.OK)
@@ -456,7 +474,7 @@ namespace QLCF.Forms
                     string sql = $@"
                         SELECT ct.MaCTHD, ct.MaHD, ct.MaMon, m.TenMon, 
                                {colTenSize},
-                               ct.SoLuong, ct.DonGia, ct.ThanhTien, ct.GhiChu
+                               ct.SoLuong, ct.DonGia, ISNULL(ct.ThanhTien, ct.SoLuong * ct.DonGia) AS ThanhTien, ct.GhiChu
                         FROM dbo.ChiTietHoaDon ct
                         JOIN dbo.MonAn m ON ct.MaMon = m.MaMon
                         WHERE ct.MaHD = @MaHD

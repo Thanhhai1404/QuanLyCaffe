@@ -228,6 +228,7 @@ namespace QLCF.Forms
                 _tongTienThanhToan,
                 0m,
                 _nguoiThanhToan,
+                "", // maKhuyenMai
                 _chiTietList))
             {
                 frmBill.ShowDialog(this);

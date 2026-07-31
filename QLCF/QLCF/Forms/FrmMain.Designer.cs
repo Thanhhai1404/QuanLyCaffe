@@ -36,9 +36,9 @@ namespace QLCF.Forms
             this.lblSubTieuDe = new System.Windows.Forms.Label();
             this.lblTieuDeApp = new System.Windows.Forms.Label();
             this.pnlMenu = new System.Windows.Forms.Panel();
-            this.pnlActiveIndicator = new System.Windows.Forms.Panel();
             this.btnDoiMatKhau = new System.Windows.Forms.Button();
             this.btnThongKe = new System.Windows.Forms.Button();
+            this.btnKhuyenMai = new System.Windows.Forms.Button();
             this.btnHoaDon = new System.Windows.Forms.Button();
             this.btnNhanVien = new System.Windows.Forms.Button();
             this.btnKhuVucBan = new System.Windows.Forms.Button();
@@ -47,6 +47,7 @@ namespace QLCF.Forms
             this.btnMonAn = new System.Windows.Forms.Button();
             this.btnBanHang = new System.Windows.Forms.Button();
             this.pnlLogo = new System.Windows.Forms.Panel();
+            this.pnlActiveIndicator = new System.Windows.Forms.Panel();
             this.lblLogoText = new System.Windows.Forms.Label();
             this.pnlNoiDung = new System.Windows.Forms.Panel();
             this.pnlHeader.SuspendLayout();
@@ -143,12 +144,14 @@ namespace QLCF.Forms
             this.pnlMenu.Controls.Add(this.pnlActiveIndicator);
             this.pnlMenu.Controls.Add(this.btnDoiMatKhau);
             this.pnlMenu.Controls.Add(this.btnThongKe);
+            this.pnlMenu.Controls.Add(this.btnKhuyenMai);
             this.pnlMenu.Controls.Add(this.btnHoaDon);
             this.pnlMenu.Controls.Add(this.btnNhanVien);
             this.pnlMenu.Controls.Add(this.btnKho);
             this.pnlMenu.Controls.Add(this.btnKhuVucBan);
             this.pnlMenu.Controls.Add(this.btnDanhMuc);
             this.pnlMenu.Controls.Add(this.btnMonAn);
+            this.pnlMenu.Controls.Add(this.pnlActiveIndicator);
             this.pnlMenu.Controls.Add(this.btnBanHang);
             this.pnlMenu.Controls.Add(this.pnlLogo);
             this.pnlMenu.Dock = System.Windows.Forms.DockStyle.Left;
@@ -203,6 +206,25 @@ namespace QLCF.Forms
             this.btnThongKe.Text = "Thống kê";
             this.btnThongKe.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnThongKe.UseVisualStyleBackColor = false;
+            // 
+            // btnKhuyenMai
+            // 
+            this.btnKhuyenMai.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(41)))), ((int)(((byte)(59)))));
+            this.btnKhuyenMai.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnKhuyenMai.Dock = System.Windows.Forms.DockStyle.Top;
+            this.btnKhuyenMai.FlatAppearance.BorderSize = 0;
+            this.btnKhuyenMai.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnKhuyenMai.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnKhuyenMai.ForeColor = System.Drawing.Color.White;
+            this.btnKhuyenMai.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnKhuyenMai.Location = new System.Drawing.Point(0, 314);
+            this.btnKhuyenMai.Name = "btnKhuyenMai";
+            this.btnKhuyenMai.Padding = new System.Windows.Forms.Padding(25, 0, 0, 0);
+            this.btnKhuyenMai.Size = new System.Drawing.Size(230, 48);
+            this.btnKhuyenMai.TabIndex = 10;
+            this.btnKhuyenMai.Text = "Khuyến mãi";
+            this.btnKhuyenMai.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnKhuyenMai.UseVisualStyleBackColor = false;
             // 
             // btnHoaDon
             // 
@@ -413,6 +435,7 @@ namespace QLCF.Forms
         private System.Windows.Forms.Button btnNhanVien;
         private System.Windows.Forms.Button btnHoaDon;
         private System.Windows.Forms.Button btnThongKe;
+        private System.Windows.Forms.Button btnKhuyenMai;
         private System.Windows.Forms.Button btnDoiMatKhau;
         private System.Windows.Forms.Panel pnlNoiDung;
         private System.Windows.Forms.Button btnKho;

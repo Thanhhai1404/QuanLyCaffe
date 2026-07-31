@@ -88,6 +88,11 @@ namespace QLCF.Forms
 
             // Khởi tạo Shift Timer
             InitShiftTimer();
+            
+            // Tải danh sách khuyến mãi
+            LoadKhuyenMai();
+            this.chkApDungKhuyenMai.CheckedChanged += chkApDungKhuyenMai_CheckedChanged;
+            this.cboKhuyenMai.SelectedIndexChanged += cboKhuyenMai_SelectedIndexChanged;
         }
 
         #region 1. DỮ LIỆU KHU VỰC VÀ SƠ ĐỒ BÀN
@@ -236,19 +241,15 @@ namespace QLCF.Forms
             else
             {
                 btn.Enabled = true;
+                bool isHasInvoice = (ban.MaHoaDonMo.HasValue && ban.MaHoaDonMo.Value > 0) || (ban.TamTinh.HasValue && ban.TamTinh.Value > 0);
                 string trangThaiStr = ban.TrangThai != null ? ban.TrangThai.Trim() : "";
 
-                if (trangThaiStr.Equals("Trống", StringComparison.OrdinalIgnoreCase))
-                {
-                    btn.BackColor = UITheme.TableTrongBg;
-                    btn.ForeColor = UITheme.TableTrongText;
-                    btn.FlatAppearance.BorderColor = isSelected ? UITheme.PrimaryAccent : UITheme.TableTrongBorder;
-                }
-                else if (trangThaiStr.Equals("Có khách", StringComparison.OrdinalIgnoreCase))
+                if (isHasInvoice || trangThaiStr.Equals("Có khách", StringComparison.OrdinalIgnoreCase) || trangThaiStr.Equals("Có người", StringComparison.OrdinalIgnoreCase) || trangThaiStr.Equals("Đang dùng", StringComparison.OrdinalIgnoreCase))
                 {
                     btn.BackColor = UITheme.TableCoKhachBg;
                     btn.ForeColor = UITheme.TableCoKhachText;
                     btn.FlatAppearance.BorderColor = isSelected ? UITheme.PrimaryAccent : UITheme.TableCoKhachBorder;
+                    trangThaiStr = "Có khách";
                 }
                 else if (trangThaiStr.Equals("Đặt trước", StringComparison.OrdinalIgnoreCase))
                 {
@@ -258,9 +259,10 @@ namespace QLCF.Forms
                 }
                 else
                 {
-                    btn.BackColor = Color.FromArgb(241, 245, 249);
-                    btn.ForeColor = UITheme.TextPrimary;
-                    btn.FlatAppearance.BorderColor = isSelected ? UITheme.PrimaryAccent : UITheme.BorderColor;
+                    btn.BackColor = UITheme.TableTrongBg;
+                    btn.ForeColor = UITheme.TableTrongText;
+                    btn.FlatAppearance.BorderColor = isSelected ? UITheme.PrimaryAccent : UITheme.TableTrongBorder;
+                    trangThaiStr = "Trống";
                 }
 
                 if (isSelected)
@@ -268,7 +270,7 @@ namespace QLCF.Forms
                     btn.FlatAppearance.BorderColor = UITheme.PrimaryAccent;
                 }
 
-                btn.Text = $"{ban.TenBan}\n{ban.TrangThai}\n{tamTinhText}";
+                btn.Text = $"{ban.TenBan}\n{trangThaiStr}\n{tamTinhText}";
             }
 
             btn.Click += Ban_Click;
@@ -302,15 +304,14 @@ namespace QLCF.Forms
                     else
                     {
                         btn.FlatAppearance.BorderSize = 1;
+                        bool isHasInvoice = (ban.MaHoaDonMo.HasValue && ban.MaHoaDonMo.Value > 0) || (ban.TamTinh.HasValue && ban.TamTinh.Value > 0);
                         string trangThaiStr = ban.TrangThai != null ? ban.TrangThai.Trim() : "";
-                        if (trangThaiStr.Equals("Trống", StringComparison.OrdinalIgnoreCase))
-                            btn.FlatAppearance.BorderColor = UITheme.TableTrongBorder;
-                        else if (trangThaiStr.Equals("Có khách", StringComparison.OrdinalIgnoreCase))
+                        if (isHasInvoice || trangThaiStr.Equals("Có khách", StringComparison.OrdinalIgnoreCase) || trangThaiStr.Equals("Có người", StringComparison.OrdinalIgnoreCase))
                             btn.FlatAppearance.BorderColor = UITheme.TableCoKhachBorder;
                         else if (trangThaiStr.Equals("Đặt trước", StringComparison.OrdinalIgnoreCase))
                             btn.FlatAppearance.BorderColor = UITheme.TableDatTruocBorder;
                         else
-                            btn.FlatAppearance.BorderColor = UITheme.BorderColor;
+                            btn.FlatAppearance.BorderColor = UITheme.TableTrongBorder;
                     }
                 }
             }
@@ -320,9 +321,12 @@ namespace QLCF.Forms
         {
             lblHuongDan.Visible = false;
 
+            bool isHasInvoice = (ban.MaHoaDonMo.HasValue && ban.MaHoaDonMo.Value > 0) || (ban.TamTinh.HasValue && ban.TamTinh.Value > 0);
+            string displayTrangThai = isHasInvoice ? "Có khách" : (string.IsNullOrWhiteSpace(ban.TrangThai) ? "Trống" : ban.TrangThai);
+
             lblTenBanDangChon.Text = "Tên bàn: " + ban.TenBan;
             lblKhuVucDangChon.Text = "Khu vực: " + ban.TenKhuVuc;
-            lblTrangThaiBan.Text = "Trạng thái: " + ban.TrangThai;
+            lblTrangThaiBan.Text = "Trạng thái: " + displayTrangThai;
 
             if (ban.MaHoaDonMo.HasValue && ban.MaHoaDonMo.Value > 0)
             {
@@ -741,11 +745,19 @@ namespace QLCF.Forms
                 count = Convert.ToInt32(cmdCheck.ExecuteScalar());
             }
 
+            bool isThanhTienComputed = false;
+            using (SqlCommand cmdChk = new SqlCommand("SELECT is_computed FROM sys.columns WHERE object_id = OBJECT_ID('dbo.ChiTietHoaDon') AND name = 'ThanhTien'", conn))
+            {
+                object resChk = cmdChk.ExecuteScalar();
+                if (resChk != null && resChk != DBNull.Value) isThanhTienComputed = Convert.ToBoolean(resChk);
+            }
+
             if (count > 0)
             {
-                string sqlUpdateCT = @"UPDATE dbo.ChiTietHoaDon 
+                string sqlUpdateCT = $@"UPDATE dbo.ChiTietHoaDon 
                     SET SoLuong = SoLuong + @SoLuong, 
                         DonGia = @DonGia, 
+                        {(isThanhTienComputed ? "" : "ThanhTien = (SoLuong + @SoLuong) * @DonGia,")}
                         GhiChu = CASE WHEN @GhiChu IS NOT NULL AND @GhiChu <> '' THEN @GhiChu ELSE GhiChu END 
                     WHERE MaHD = @MaHD AND MaMon = @MaMon AND ISNULL(TenSize, '') = ISNULL(@TenSize, '')";
                 using (SqlCommand cmdUpd = new SqlCommand(sqlUpdateCT, conn))
@@ -761,8 +773,12 @@ namespace QLCF.Forms
             }
             else
             {
-                string sqlInsertCT = @"INSERT INTO dbo.ChiTietHoaDon (MaHD, MaMon, TenSize, SoLuong, DonGia, GhiChu) 
-                    VALUES (@MaHD, @MaMon, @TenSize, @SoLuong, @DonGia, @GhiChu)";
+                string sqlInsertCT = isThanhTienComputed 
+                    ? @"INSERT INTO dbo.ChiTietHoaDon (MaHD, MaMon, TenSize, SoLuong, DonGia, GhiChu) 
+                        VALUES (@MaHD, @MaMon, @TenSize, @SoLuong, @DonGia, @GhiChu)"
+                    : @"INSERT INTO dbo.ChiTietHoaDon (MaHD, MaMon, TenSize, SoLuong, DonGia, ThanhTien, GhiChu) 
+                        VALUES (@MaHD, @MaMon, @TenSize, @SoLuong, @DonGia, @SoLuong * @DonGia, @GhiChu)";
+                
                 using (SqlCommand cmdIns = new SqlCommand(sqlInsertCT, conn))
                 {
                     cmdIns.Parameters.Add("@MaHD", SqlDbType.Int).Value = maHD.Value;
@@ -1311,6 +1327,86 @@ namespace QLCF.Forms
             MoFormThanhToan();
         }
 
+        private void LoadKhuyenMai()
+        {
+            try
+            {
+                cboKhuyenMai.Items.Clear();
+                
+                using (SqlConnection conn = Db.CreateConnection())
+                {
+                    string sql = "SELECT * FROM dbo.KhuyenMai WHERE TrangThai = 1 AND NgayBatDau <= GETDATE() AND (NgayKetThuc >= CAST(GETDATE() AS DATE) OR NgayKetThuc IS NULL) AND (SoLuotConLai IS NULL OR SoLuotConLai > 0)";
+                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    {
+                        conn.Open();
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                KhuyenMaiModel km = new KhuyenMaiModel
+                                {
+                                    MaKM = Convert.ToInt32(reader["MaKM"]),
+                                    TenKM = reader["TenKM"].ToString(),
+                                    MaKhuyenMai = reader["MaKhuyenMai"].ToString(),
+                                    LoaiGiamGia = Convert.ToInt32(reader["LoaiGiamGia"]),
+                                    GiaTriGiam = Convert.ToDecimal(reader["GiaTriGiam"]),
+                                    GiamToiDa = reader["GiamToiDa"] != DBNull.Value ? (decimal?)Convert.ToDecimal(reader["GiamToiDa"]) : null,
+                                    DieuKienToiThieu = Convert.ToDecimal(reader["DieuKienToiThieu"]),
+                                    NgayBatDau = Convert.ToDateTime(reader["NgayBatDau"]),
+                                    NgayKetThuc = Convert.ToDateTime(reader["NgayKetThuc"]),
+                                    SoLuotConLai = reader["SoLuotConLai"] != DBNull.Value ? (int?)Convert.ToInt32(reader["SoLuotConLai"]) : null,
+                                    TrangThai = Convert.ToBoolean(reader["TrangThai"])
+                                };
+                                cboKhuyenMai.Items.Add(km);
+                            }
+                        }
+                    }
+                }
+
+                cboKhuyenMai.DisplayMember = "TenKM";
+                cboKhuyenMai.ValueMember = "MaKhuyenMai";
+                
+                if (cboKhuyenMai.Items.Count > 0)
+                {
+                    cboKhuyenMai.SelectedIndex = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Ignored or log
+            }
+        }
+
+        private void cboKhuyenMai_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (chkApDungKhuyenMai.Checked)
+            {
+                // Re-evaluate if valid
+                chkApDungKhuyenMai_CheckedChanged(null, null);
+            }
+        }
+
+        private void chkApDungKhuyenMai_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkApDungKhuyenMai.Checked)
+            {
+                decimal tongTamTinh = currentBan?.TamTinh ?? 0;
+                if (cboKhuyenMai.SelectedItem is KhuyenMaiModel km)
+                {
+                    if (tongTamTinh < km.DieuKienToiThieu)
+                    {
+                        MessageBox.Show($"Chưa đủ điều kiện! Đơn hàng cần tối thiểu {km.DieuKienToiThieu:N0}đ để áp dụng mã này.", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        chkApDungKhuyenMai.Checked = false;
+                        return;
+                    }
+                }
+                else
+                {
+                    chkApDungKhuyenMai.Checked = false;
+                }
+            }
+        }
+
         private void MoFormThanhToan()
         {
             // Validate 1: Chưa chọn bàn
@@ -1335,8 +1431,17 @@ namespace QLCF.Forms
                 return;
             }
 
+            // Calculate KM
+            decimal soTienKhuyenMai = 0;
+            string maKMApDung = "";
+            if (chkApDungKhuyenMai.Checked && cboKhuyenMai.SelectedItem is KhuyenMaiModel km)
+            {
+                soTienKhuyenMai = km.TinhSoTienGiam(tongTamTinh);
+                maKMApDung = km.MaKhuyenMai;
+            }
+
             // Mở Form thanh toán dạng Dialog
-            using (FrmThanhToan frm = new FrmThanhToan(currentBan.MaHoaDonMo.Value, currentBan.MaBan, currentBan.TenBan, tongTamTinh))
+            using (FrmThanhToan frm = new FrmThanhToan(currentBan.MaHoaDonMo.Value, currentBan.MaBan, currentBan.TenBan, tongTamTinh, soTienKhuyenMai, maKMApDung))
             {
                 if (frm.ShowDialog(this) == DialogResult.OK)
                 {

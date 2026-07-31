@@ -16,6 +16,16 @@ namespace QLCF
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            
+            try 
+            {
+                QLCF.Data.Db.EnsureDatabaseSchema();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khởi tạo CSDL: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
             Application.Run(new FrmDangNhap());
         }
     }

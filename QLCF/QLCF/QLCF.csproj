@@ -148,6 +148,12 @@
     <Compile Include="Forms\FrmQuanLyKho.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Forms\FrmQuanLyKhuyenMai.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmQuanLyKhuyenMai.Designer.cs">
+      <DependentUpon>FrmQuanLyKhuyenMai.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\FrmQuanLyKho.Designer.cs">
       <DependentUpon>FrmQuanLyKho.cs</DependentUpon>
     </Compile>

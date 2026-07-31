@@ -29,6 +29,7 @@ namespace QLCF.Forms
             this.btnKhuVucBan.Click += btnKhuVucBan_Click;
             this.btnNhanVien.Click += btnNhanVien_Click;
             this.btnHoaDon.Click += btnHoaDon_Click;
+            this.btnKhuyenMai.Click += btnKhuyenMai_Click;
             this.btnThongKe.Click += btnThongKe_Click;
             this.btnDoiMatKhau.Click += btnDoiMatKhau_Click;
             this.btnKho.Click += btnKho_Click;
@@ -53,10 +54,11 @@ namespace QLCF.Forms
             btnKhuVucBan.Text = "🪑 Khu vực bàn";
             btnNhanVien.Text = "👥 Nhân viên";
             btnHoaDon.Text = "🧾 Hóa đơn";
+            btnKhuyenMai.Text = "🎁 Khuyến mãi";
             btnThongKe.Text = "📊 Thống kê";
             btnDoiMatKhau.Text = "🔑 Đổi mật khẩu";
 
-            Button[] menuButtons = new Button[] { btnBanHang, btnMonAn, btnKhuVucBan, btnKho, btnNhanVien, btnHoaDon, btnThongKe, btnDoiMatKhau };
+            Button[] menuButtons = new Button[] { btnBanHang, btnMonAn, btnKhuVucBan, btnKho, btnNhanVien, btnHoaDon, btnKhuyenMai, btnThongKe, btnDoiMatKhau };
             foreach (Button b in menuButtons)
             {
                 if (b == null) continue;
@@ -101,6 +103,7 @@ namespace QLCF.Forms
                 btnKho.Visible = true;
                 btnNhanVien.Visible = true;
                 btnHoaDon.Visible = true;
+                btnKhuyenMai.Visible = true;
                 btnThongKe.Visible = true;
                 btnDoiMatKhau.Visible = true;
 
@@ -117,6 +120,7 @@ namespace QLCF.Forms
                 btnKho.Visible = false;
                 btnNhanVien.Visible = false;
                 btnHoaDon.Visible = false;
+                btnKhuyenMai.Visible = false;
                 btnThongKe.Visible = false;
 
                 // Load Welcome screen for Staff
@@ -345,6 +349,15 @@ namespace QLCF.Forms
         private void btnHoaDon_Click(object sender, EventArgs e)
         {
             MoLichSuHoaDon();
+        }
+
+        private void btnKhuyenMai_Click(object sender, EventArgs e)
+        {
+            if (!KiemTraQuyenAdmin()) return;
+            CapNhatMenuDangChon(btnKhuyenMai);
+            lblTieuDeApp.Text = "QUẢN LÝ CHƯƠNG TRÌNH KHUYẾN MÃI";
+            FrmQuanLyKhuyenMai frm = new FrmQuanLyKhuyenMai();
+            HienThiNoiDung(frm);
         }
 
         private void btnDoiMatKhau_Click(object sender, EventArgs e)
