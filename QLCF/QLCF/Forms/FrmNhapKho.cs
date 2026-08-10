@@ -33,12 +33,7 @@ namespace QLCF.Forms
             UITheme.ApplyStyleToForm(this);
             pnlHeader.BackColor = UITheme.HeaderDark;
             UITheme.ApplyStyleToButton(btnThemVaoPhieu, isPrimary: true);
-            
-            // Format btnHoanTat specifically
-            btnHoanTat.BackColor = UITheme.PrimaryAccent;
-            btnHoanTat.ForeColor = Color.White;
-            btnHoanTat.FlatStyle = FlatStyle.Flat;
-            btnHoanTat.FlatAppearance.BorderSize = 0;
+            UITheme.ApplyStyleToButton(btnHoanTat, isPrimary: true);
 
             UITheme.ApplyStyleToDataGridView(dgvChiTiet);
 
@@ -208,26 +203,26 @@ namespace QLCF.Forms
                     try
                     {
                         // 1. Insert PhieuNhapKho
-                        string sqlPhieu = "INSERT INTO PhieuNhapKho (NguoiNhap, TongTien, GhiChu) OUTPUT INSERTED.MaPhieuNhap VALUES (@NguoiNhap, @TongTien, @GhiChu)";
+                        string sqlPhieu = "INSERT INTO PhieuNhapKho (MaNV, TongTien, GhiChu) OUTPUT INSERTED.MaPN VALUES (@MaNV, @TongTien, @GhiChu)";
                         int maPhieuNhap = 0;
                         using (SqlCommand cmdPhieu = new SqlCommand(sqlPhieu, conn, trans))
                         {
-                            cmdPhieu.Parameters.AddWithValue("@NguoiNhap", UserSession.HoTen);
+                            cmdPhieu.Parameters.AddWithValue("@MaNV", UserSession.HoTen); // Alternatively, use UserSession.MaNV if available
                             cmdPhieu.Parameters.AddWithValue("@TongTien", tongTien);
                             cmdPhieu.Parameters.AddWithValue("@GhiChu", txtGhiChu.Text.Trim());
                             maPhieuNhap = (int)cmdPhieu.ExecuteScalar();
                         }
 
                         // 2. Insert ChiTietPhieuNhap (Trigger TRG_CapNhatTonKho_Nhap will run and update NguyenVatLieu)
-                        string sqlChiTiet = "INSERT INTO ChiTietPhieuNhap (MaPhieuNhap, MaNVL, SoLuong, DonGia, ThanhTien) VALUES (@MaPhieuNhap, @MaNVL, @SoLuong, @DonGia, @ThanhTien)";
+                        string sqlChiTiet = "INSERT INTO ChiTietPhieuNhap (MaPN, MaNVL, SoLuongNhap, DonGiaNhap, ThanhTien) VALUES (@MaPN, @MaNVL, @SoLuongNhap, @DonGiaNhap, @ThanhTien)";
                         foreach (DataRow row in dtChiTiet.Rows)
                         {
                             using (SqlCommand cmdCT = new SqlCommand(sqlChiTiet, conn, trans))
                             {
-                                cmdCT.Parameters.AddWithValue("@MaPhieuNhap", maPhieuNhap);
+                                cmdCT.Parameters.AddWithValue("@MaPN", maPhieuNhap);
                                 cmdCT.Parameters.AddWithValue("@MaNVL", row["MaNVL"]);
-                                cmdCT.Parameters.AddWithValue("@SoLuong", row["SoLuong"]);
-                                cmdCT.Parameters.AddWithValue("@DonGia", row["DonGia"]);
+                                cmdCT.Parameters.AddWithValue("@SoLuongNhap", row["SoLuong"]);
+                                cmdCT.Parameters.AddWithValue("@DonGiaNhap", row["DonGia"]);
                                 cmdCT.Parameters.AddWithValue("@ThanhTien", row["ThanhTien"]);
                                 cmdCT.ExecuteNonQuery();
                             }

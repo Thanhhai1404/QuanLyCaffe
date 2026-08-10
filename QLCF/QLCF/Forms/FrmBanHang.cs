@@ -534,20 +534,21 @@ namespace QLCF.Forms
                 Tag = mon
             };
 
-            // Custom Paint for rounded border
+            bool isHovered = false;
+
+            // Custom Paint for rounded border and hover highlight
             pnlCard.Paint += (s, e) =>
             {
                 e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                int radius = 8;
-                System.Drawing.Drawing2D.GraphicsPath path = new System.Drawing.Drawing2D.GraphicsPath();
-                path.AddArc(0, 0, radius, radius, 180, 90);
-                path.AddArc(pnlCard.Width - radius - 1, 0, radius, radius, 270, 90);
-                path.AddArc(pnlCard.Width - radius - 1, pnlCard.Height - radius - 1, radius, radius, 0, 90);
-                path.AddArc(0, pnlCard.Height - radius - 1, radius, radius, 90, 90);
-                path.CloseFigure();
-                using (Pen pen = new Pen(UITheme.BorderColor, 1))
+                int radius = 10;
+                using (System.Drawing.Drawing2D.GraphicsPath path = UITheme.GetRoundedPath(pnlCard.ClientRectangle, radius))
                 {
-                    e.Graphics.DrawPath(pen, path);
+                    Color borderCol = isHovered ? UITheme.PrimaryAccent : UITheme.BorderColor;
+                    int penWidth = isHovered ? 2 : 1;
+                    using (Pen pen = new Pen(borderCol, penWidth))
+                    {
+                        e.Graphics.DrawPath(pen, path);
+                    }
                 }
             };
 
@@ -567,7 +568,7 @@ namespace QLCF.Forms
                 Text = mon.TenMon,
                 Font = new Font("Segoe UI", 9.5F, FontStyle.Bold, GraphicsUnit.Point),
                 ForeColor = Color.FromArgb(15, 23, 42),
-                Location = new Point(4, 103),
+                Location = new Point(5, 103),
                 Size = new Size(135, 42),
                 TextAlign = ContentAlignment.TopLeft,
                 AutoEllipsis = true,
@@ -577,9 +578,9 @@ namespace QLCF.Forms
             Label lblGia = new Label
             {
                 Text = DinhDangTien(mon.DonGia),
-                Font = new Font("Segoe UI", 11F, FontStyle.Bold, GraphicsUnit.Point),
-                ForeColor = UITheme.PrimaryAccent, // Amber-600 Accent
-                Location = new Point(4, 145),
+                Font = new Font("Segoe UI", 10.5F, FontStyle.Bold, GraphicsUnit.Point),
+                ForeColor = UITheme.PrimaryAccent, // Amber Accent
+                Location = new Point(5, 145),
                 Size = new Size(135, 25),
                 TextAlign = ContentAlignment.MiddleRight,
                 Tag = mon
@@ -595,11 +596,13 @@ namespace QLCF.Forms
             {
                 ctrl.MouseEnter += (s, e) =>
                 {
-                    pnlCard.BackColor = Color.FromArgb(254, 243, 199); // Amber-50
+                    isHovered = true;
+                    pnlCard.BackColor = Color.FromArgb(255, 251, 235); // Soft Amber-50
                     pnlCard.Invalidate();
                 };
                 ctrl.MouseLeave += (s, e) =>
                 {
+                    isHovered = false;
                     pnlCard.BackColor = Color.White;
                     pnlCard.Invalidate();
                 };

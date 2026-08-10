@@ -270,9 +270,9 @@ namespace QLCF.Forms
             this.btnHoanTat.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnHoanTat.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.btnHoanTat.ForeColor = System.Drawing.Color.White;
-            this.btnHoanTat.Location = new System.Drawing.Point(580, 50);
+            this.btnHoanTat.Location = new System.Drawing.Point(450, 60);
             this.btnHoanTat.Name = "btnHoanTat";
-            this.btnHoanTat.Size = new System.Drawing.Size(200, 50);
+            this.btnHoanTat.Size = new System.Drawing.Size(320, 50);
             this.btnHoanTat.TabIndex = 4;
             this.btnHoanTat.Text = "LƯU PHIẾU NHẬP";
             this.btnHoanTat.UseVisualStyleBackColor = false;
@@ -281,7 +281,7 @@ namespace QLCF.Forms
             // 
             this.lblTongTienText.AutoSize = true;
             this.lblTongTienText.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.lblTongTienText.Location = new System.Drawing.Point(400, 65);
+            this.lblTongTienText.Location = new System.Drawing.Point(450, 20);
             this.lblTongTienText.Name = "lblTongTienText";
             this.lblTongTienText.Size = new System.Drawing.Size(87, 21);
             this.lblTongTienText.TabIndex = 3;
@@ -289,14 +289,15 @@ namespace QLCF.Forms
             // 
             // lblTongTienVal
             // 
-            this.lblTongTienVal.AutoSize = true;
+            this.lblTongTienVal.AutoSize = false;
             this.lblTongTienVal.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
             this.lblTongTienVal.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(225)))), ((int)(((byte)(29)))), ((int)(((byte)(72)))));
-            this.lblTongTienVal.Location = new System.Drawing.Point(490, 59);
+            this.lblTongTienVal.Location = new System.Drawing.Point(540, 15);
             this.lblTongTienVal.Name = "lblTongTienVal";
-            this.lblTongTienVal.Size = new System.Drawing.Size(46, 30);
+            this.lblTongTienVal.Size = new System.Drawing.Size(230, 30);
             this.lblTongTienVal.TabIndex = 2;
             this.lblTongTienVal.Text = "0 đ";
+            this.lblTongTienVal.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // txtGhiChu
             // 
