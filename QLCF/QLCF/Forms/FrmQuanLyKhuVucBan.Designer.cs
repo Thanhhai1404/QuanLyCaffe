@@ -125,13 +125,13 @@ namespace QLCF.Forms
             // lblTieuDe
             // 
             this.lblTieuDe.AutoSize = true;
-            this.lblTieuDe.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTieuDe.Font = new System.Drawing.Font("Segoe UI", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTieuDe.ForeColor = System.Drawing.Color.White;
             this.lblTieuDe.Location = new System.Drawing.Point(20, 15);
             this.lblTieuDe.Name = "lblTieuDe";
-            this.lblTieuDe.Size = new System.Drawing.Size(378, 32);
+            this.lblTieuDe.Size = new System.Drawing.Size(320, 30);
             this.lblTieuDe.TabIndex = 0;
-            this.lblTieuDe.Text = "🏢 QUẢN LÝ KHU VỰC VÀ BÀN";
+            this.lblTieuDe.Text = "QUẢN LÝ KHU VỰC & BÀN";
             // 
             // tabMain
             // 
@@ -139,24 +139,25 @@ namespace QLCF.Forms
             this.tabMain.Controls.Add(this.tabBan);
             this.tabMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabMain.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tabMain.ItemSize = new System.Drawing.Size(150, 35);
+            this.tabMain.ItemSize = new System.Drawing.Size(180, 42);
             this.tabMain.Location = new System.Drawing.Point(0, 60);
             this.tabMain.Name = "tabMain";
+            this.tabMain.Padding = new System.Drawing.Point(24, 10);
             this.tabMain.SelectedIndex = 0;
             this.tabMain.Size = new System.Drawing.Size(1100, 590);
-            this.tabMain.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
+            this.tabMain.SizeMode = System.Windows.Forms.TabSizeMode.Normal;
             this.tabMain.TabIndex = 1;
             // 
             // tabKhuVuc
             // 
             this.tabKhuVuc.Controls.Add(this.pnlKhuVucContent);
             this.tabKhuVuc.Controls.Add(this.pnlKhuVucInput);
-            this.tabKhuVuc.Location = new System.Drawing.Point(4, 39);
+            this.tabKhuVuc.Location = new System.Drawing.Point(4, 46);
             this.tabKhuVuc.Name = "tabKhuVuc";
             this.tabKhuVuc.Padding = new System.Windows.Forms.Padding(10);
-            this.tabKhuVuc.Size = new System.Drawing.Size(1092, 547);
+            this.tabKhuVuc.Size = new System.Drawing.Size(1092, 540);
             this.tabKhuVuc.TabIndex = 0;
-            this.tabKhuVuc.Text = "🗺️ Khu vực";
+            this.tabKhuVuc.Text = " 🗺️   Danh Sách Khu Vực  ";
             this.tabKhuVuc.UseVisualStyleBackColor = true;
             // 
             // pnlKhuVucContent
@@ -372,7 +373,7 @@ namespace QLCF.Forms
             this.tabBan.Padding = new System.Windows.Forms.Padding(10);
             this.tabBan.Size = new System.Drawing.Size(1092, 547);
             this.tabBan.TabIndex = 1;
-            this.tabBan.Text = "🪑 Bàn";
+            this.tabBan.Text = " 🪑   Danh Sách Bàn Ăn  ";
             this.tabBan.UseVisualStyleBackColor = true;
             // 
             // pnlBanContent

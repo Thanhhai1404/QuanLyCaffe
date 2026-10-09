@@ -1,0 +1,57 @@
+========================================================================
+HƯỚNG DẪN SỬ DỤNG VÀ CHẤM ĐIỂM ĐỒ ÁN QUẢN LÝ QUÁN CAFE (QLCF)
+========================================================================
+
+Kính gửi Thầy/Cô, dưới đây là thông tin và hướng dẫn chi tiết để Thầy/Cô có thể dễ dàng chạy thử và chấm điểm phần mềm.
+
+------------------------------------------------------------------------
+1. HƯỚNG DẪN KHỞI TẠO CƠ SỞ DỮ LIỆU (DATABASE)
+------------------------------------------------------------------------
+Để chạy phần mềm, Thầy/Cô vui lòng khởi tạo Database theo các bước sau:
+Bước 1: Mở SQL Server Management Studio (SSMS).
+Bước 2: Mở file script có tên "QLCF_Database_Complete.sql" đính kèm trong thư mục gốc của đồ án.
+Bước 3: Nhấn nút Execute (hoặc phím F5) để thực thi toàn bộ script. 
+*Lưu ý: File này đã bao gồm toàn bộ cấu trúc bảng, các trigger tự động cập nhật kho, stored procedures và toàn bộ dữ liệu mẫu (Sample Data).*
+
+Bước 4: Mở source code C# bằng Visual Studio.
+Bước 5: Vào thư mục Data -> mở file Db.cs. Kiểm tra dòng ConnectionString. 
+Mặc định đang để là: @"Data Source=.\SQLEXPRESS;Initial Catalog=QLCF;Integrated Security=True;..."
+Thầy/Cô vui lòng đổi ".\SQLEXPRESS" thành Tên SQL Server (Server Name) của máy Thầy/Cô nếu bị lỗi kết nối.
+
+------------------------------------------------------------------------
+2. THÔNG TIN TÀI KHOẢN ĐĂNG NHẬP
+------------------------------------------------------------------------
+Phần mềm có phân quyền rõ ràng theo 2 vai trò. Thầy/Cô sử dụng các tài khoản có sẵn dưới đây (Mật khẩu đã được mã hóa BCrypt an toàn trong DB):
+
+[Tài khoản Quản trị - ADMIN]
+- Tên đăng nhập: admin
+- Mật khẩu: 123456
+- Quyền hạn: Toàn quyền truy cập (Bán hàng, Thống kê, Quản lý Nhân sự, Quản lý Kho, Tạo khuyến mãi).
+
+[Tài khoản Nhân viên Bán hàng]
+- Tên đăng nhập: nhanvien1
+- Mật khẩu: 123456
+- Quyền hạn: Chỉ được truy cập màn hình Bán hàng (Order, Thanh toán, Chuyển/Gộp bàn). Không có quyền xem thống kê tài chính hay quản lý nhân sự.
+
+------------------------------------------------------------------------
+3. CÁC TÍNH NĂNG CHÍNH ĐỂ THẦY CÔ TRẢI NGHIỆM
+------------------------------------------------------------------------
+* Module Bán Hàng (Giao diện chuẩn UI/UX ProMax):
+  - Mở bàn, chọn món, chọn Size (S, M, L với giá phụ thu thay đổi linh hoạt).
+  - Áp dụng các Mã Khuyến Mãi (Voucher) cho hóa đơn.
+  - Chuyển bàn, Gộp bàn nếu khách có nhu cầu.
+  - In Preview Hóa đơn (Bill) trước khi tính tiền.
+
+* Module Quản Lý Kho (Tự động hóa):
+  - Lập Phiếu nhập kho (chọn nguyên vật liệu, số lượng, giá nhập).
+  - Tự động cộng dồn số lượng Tồn kho thông qua hệ thống SQL Trigger.
+
+* Module Quản Trị Hệ Thống:
+  - Thống kê doanh thu theo ngày/tháng/năm trực quan.
+  - Quản lý, cấp quyền và Khóa/Mở khóa tài khoản Nhân viên.
+  - Reset mật khẩu cho nhân viên (Mật khẩu mới sẽ tự động được băm BCrypt).
+  - Quản lý danh mục Thực đơn, Bàn và Khu vực.
+
+========================================================================
+Sinh viên thực hiện chân thành cảm ơn Thầy/Cô đã dành thời gian xem xét và đánh giá đồ án này!
+========================================================================

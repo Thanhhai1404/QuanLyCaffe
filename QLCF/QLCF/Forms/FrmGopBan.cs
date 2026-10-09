@@ -1,8 +1,10 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Drawing;
 using System.Windows.Forms;
 using QLCF.Data;
+using QLCF.Helpers;
 using QLCF.Models;
 
 namespace QLCF.Forms
@@ -47,6 +49,10 @@ namespace QLCF.Forms
 
         private void FrmGopBan_Load(object sender, EventArgs e)
         {
+            UITheme.ApplyStyleToForm(this);
+            if (btnXacNhanGop != null) UITheme.ApplyStyleToButton(btnXacNhanGop, isPrimary: true);
+            if (btnHuy != null) UITheme.ApplyStyleToButton(btnHuy, isDanger: false);
+
             lblTenBanChinhVal.Text = _tenBanChinh;
             lblMaHDChinhVal.Text = "HD" + _maHDChinh.ToString("D5");
             lblTamTinhChinhVal.Text = _tamTinhChinh.ToString("N0") + " đ";

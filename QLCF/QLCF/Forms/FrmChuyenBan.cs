@@ -1,8 +1,10 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Drawing;
 using System.Windows.Forms;
 using QLCF.Data;
+using QLCF.Helpers;
 using QLCF.Models;
 
 namespace QLCF.Forms
@@ -46,6 +48,10 @@ namespace QLCF.Forms
 
         private void FrmChuyenBan_Load(object sender, EventArgs e)
         {
+            UITheme.ApplyStyleToForm(this);
+            if (btnXacNhanChuyen != null) UITheme.ApplyStyleToButton(btnXacNhanChuyen, isPrimary: true);
+            if (btnHuy != null) UITheme.ApplyStyleToButton(btnHuy, isDanger: false);
+
             lblTenBanNguonVal.Text = _tenBanNguon;
             lblMaHDVal.Text = "HD" + _maHD.ToString("D5");
             lblTamTinhVal.Text = _tamTinh.ToString("N0") + " đ";

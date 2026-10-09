@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Drawing;
 using System.Windows.Forms;
 using QLCF.Data;
 using QLCF.Helpers;
@@ -14,9 +15,17 @@ namespace QLCF.Forms
         {
             InitializeComponent();
 
+            this.Load += FrmDoiMatKhau_Load;
             this.chkHienMatKhau.CheckedChanged += chkHienMatKhau_CheckedChanged;
             this.btnLuuMatKhau.Click += btnLuuMatKhau_Click;
             this.btnHuy.Click += btnHuy_Click;
+        }
+
+        private void FrmDoiMatKhau_Load(object sender, EventArgs e)
+        {
+            UITheme.ApplyStyleToForm(this);
+            if (btnLuuMatKhau != null) UITheme.ApplyStyleToButton(btnLuuMatKhau, isPrimary: true);
+            if (btnHuy != null) UITheme.ApplyStyleToButton(btnHuy, isDanger: false);
         }
 
         private void chkHienMatKhau_CheckedChanged(object sender, EventArgs e)

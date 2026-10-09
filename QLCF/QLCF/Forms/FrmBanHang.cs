@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using QLCF.Data;
+using QLCF.Helpers;
 using QLCF.Models;
 
 namespace QLCF.Forms
@@ -26,6 +27,9 @@ namespace QLCF.Forms
         private string selectedMonTen = string.Empty;
         private int selectedSoLuongCu = 0;
 
+        // Shift Tracking
+        private DateTime shiftStartTime;
+
         public FrmBanHang()
         {
             InitializeComponent();
@@ -43,15 +47,32 @@ namespace QLCF.Forms
             // Đăng ký sự kiện chọn dòng, cập nhật số lượng và xóa món trong hóa đơn
             this.dgvChiTietHoaDon.CellClick += dgvChiTietHoaDon_CellClick;
             this.dgvChiTietHoaDon.SelectionChanged += dgvChiTietHoaDon_SelectionChanged;
+            this.dgvChiTietHoaDon.CellContentClick += dgvChiTietHoaDon_CellContentClick;
+            this.dgvChiTietHoaDon.CellEndEdit += dgvChiTietHoaDon_CellEndEdit;
             this.btnCapNhatSoLuong.Click += btnCapNhatSoLuong_Click;
             this.btnXoaMonKhoiHoaDon.Click += btnXoaMonKhoiHoaDon_Click;
             this.btnThanhToan.Click += btnThanhToan_Click;
             this.btnChuyenBan.Click += btnChuyenBan_Click;
             this.btnGopBan.Click += btnGopBan_Click;
+
+            // Đăng ký sự kiện Kết Ca
+            this.btnKetCaTopBar.Click += btnKetCaTopBar_Click;
         }
 
         private void FrmBanHang_Load(object sender, EventArgs e)
         {
+            UITheme.ApplyStyleToForm(this);
+
+            // Style nút bấm nổi bật
+            if (btnThanhToan != null) UITheme.ApplyStyleToButton(btnThanhToan, isSuccess: true);
+            if (btnThemMon != null) UITheme.ApplyStyleToButton(btnThemMon, isPrimary: true);
+            if (btnXoaMonKhoiHoaDon != null) UITheme.ApplyStyleToButton(btnXoaMonKhoiHoaDon, isDanger: true);
+            if (btnCapNhatSoLuong != null) UITheme.ApplyStyleToButton(btnCapNhatSoLuong);
+            if (btnChuyenBan != null) UITheme.ApplyStyleToButton(btnChuyenBan);
+            if (btnGopBan != null) UITheme.ApplyStyleToButton(btnGopBan);
+            if (btnLamMoi != null) UITheme.ApplyStyleToButton(btnLamMoi);
+            if (btnDong != null) UITheme.ApplyStyleToButton(btnDong);
+
             // Định dạng DataGridView
             dgvChiTietHoaDon.AutoGenerateColumns = false;
 
@@ -64,6 +85,14 @@ namespace QLCF.Forms
             LoadKhuVuc();
             LoadDanhMuc();
             LoadMonAn();
+
+            // Khởi tạo Shift Timer
+            InitShiftTimer();
+            
+            // Tải danh sách khuyến mãi
+            LoadKhuyenMai();
+            this.chkApDungKhuyenMai.CheckedChanged += chkApDungKhuyenMai_CheckedChanged;
+            this.cboKhuyenMai.SelectedIndexChanged += cboKhuyenMai_SelectedIndexChanged;
         }
 
         #region 1. DỮ LIỆU KHU VỰC VÀ SƠ ĐỒ BÀN
@@ -187,54 +216,61 @@ namespace QLCF.Forms
         {
             Button btn = new Button
             {
-                Width = 145,
-                Height = 115,
-                Margin = new Padding(8),
+                Width = 112,
+                Height = 84,
+                Margin = new Padding(4),
                 Cursor = Cursors.Hand,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold, GraphicsUnit.Point),
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point),
                 Tag = ban
             };
 
-            btn.FlatAppearance.BorderSize = (currentBan != null && currentBan.MaBan == ban.MaBan) ? 3 : 1;
-            btn.FlatAppearance.BorderColor = (currentBan != null && currentBan.MaBan == ban.MaBan) ? Color.Blue : Color.FromArgb(189, 195, 199);
+            bool isSelected = (currentBan != null && currentBan.MaBan == ban.MaBan);
+            btn.FlatAppearance.BorderSize = isSelected ? 3 : 1;
 
             string tamTinhText = DinhDangTien(ban.TamTinh);
 
             if (!ban.DangSuDung)
             {
-                btn.BackColor = Color.FromArgb(189, 195, 199);
-                btn.ForeColor = Color.FromArgb(127, 140, 141);
+                btn.BackColor = Color.FromArgb(241, 245, 249);
+                btn.ForeColor = Color.FromArgb(148, 163, 184);
+                btn.FlatAppearance.BorderColor = Color.FromArgb(226, 232, 240);
                 btn.Enabled = false;
                 btn.Text = $"{ban.TenBan}\n({ban.TenKhuVuc})\n[Ngưng dùng]";
             }
             else
             {
                 btn.Enabled = true;
-                string trangThaiStr = ban.TrangThai.Trim();
+                bool isHasInvoice = (ban.MaHoaDonMo.HasValue && ban.MaHoaDonMo.Value > 0) || (ban.TamTinh.HasValue && ban.TamTinh.Value > 0);
+                string trangThaiStr = ban.TrangThai != null ? ban.TrangThai.Trim() : "";
 
-                if (trangThaiStr.Equals("Trống", StringComparison.OrdinalIgnoreCase))
+                if (isHasInvoice || trangThaiStr.Equals("Có khách", StringComparison.OrdinalIgnoreCase) || trangThaiStr.Equals("Có người", StringComparison.OrdinalIgnoreCase) || trangThaiStr.Equals("Đang dùng", StringComparison.OrdinalIgnoreCase))
                 {
-                    btn.BackColor = Color.FromArgb(46, 204, 113);
-                    btn.ForeColor = Color.White;
-                }
-                else if (trangThaiStr.Equals("Có khách", StringComparison.OrdinalIgnoreCase))
-                {
-                    btn.BackColor = Color.FromArgb(231, 76, 60);
-                    btn.ForeColor = Color.White;
+                    btn.BackColor = UITheme.TableCoKhachBg;
+                    btn.ForeColor = UITheme.TableCoKhachText;
+                    btn.FlatAppearance.BorderColor = isSelected ? UITheme.PrimaryAccent : UITheme.TableCoKhachBorder;
+                    trangThaiStr = "Có khách";
                 }
                 else if (trangThaiStr.Equals("Đặt trước", StringComparison.OrdinalIgnoreCase))
                 {
-                    btn.BackColor = Color.FromArgb(241, 196, 15);
-                    btn.ForeColor = Color.Black;
+                    btn.BackColor = UITheme.TableDatTruocBg;
+                    btn.ForeColor = UITheme.TableDatTruocText;
+                    btn.FlatAppearance.BorderColor = isSelected ? UITheme.PrimaryAccent : UITheme.TableDatTruocBorder;
                 }
                 else
                 {
-                    btn.BackColor = Color.FromArgb(149, 165, 166);
-                    btn.ForeColor = Color.White;
+                    btn.BackColor = UITheme.TableTrongBg;
+                    btn.ForeColor = UITheme.TableTrongText;
+                    btn.FlatAppearance.BorderColor = isSelected ? UITheme.PrimaryAccent : UITheme.TableTrongBorder;
+                    trangThaiStr = "Trống";
                 }
 
-                btn.Text = $"{ban.TenBan}\n({ban.TenKhuVuc})\n{ban.TrangThai}\n{tamTinhText}";
+                if (isSelected)
+                {
+                    btn.FlatAppearance.BorderColor = UITheme.PrimaryAccent;
+                }
+
+                btn.Text = $"{ban.TenBan}\n{trangThaiStr}\n{tamTinhText}";
             }
 
             btn.Click += Ban_Click;
@@ -263,12 +299,19 @@ namespace QLCF.Forms
                     if (currentBan != null && ban.MaBan == currentBan.MaBan)
                     {
                         btn.FlatAppearance.BorderSize = 3;
-                        btn.FlatAppearance.BorderColor = Color.Blue;
+                        btn.FlatAppearance.BorderColor = UITheme.PrimaryAccent;
                     }
                     else
                     {
                         btn.FlatAppearance.BorderSize = 1;
-                        btn.FlatAppearance.BorderColor = Color.FromArgb(189, 195, 199);
+                        bool isHasInvoice = (ban.MaHoaDonMo.HasValue && ban.MaHoaDonMo.Value > 0) || (ban.TamTinh.HasValue && ban.TamTinh.Value > 0);
+                        string trangThaiStr = ban.TrangThai != null ? ban.TrangThai.Trim() : "";
+                        if (isHasInvoice || trangThaiStr.Equals("Có khách", StringComparison.OrdinalIgnoreCase) || trangThaiStr.Equals("Có người", StringComparison.OrdinalIgnoreCase))
+                            btn.FlatAppearance.BorderColor = UITheme.TableCoKhachBorder;
+                        else if (trangThaiStr.Equals("Đặt trước", StringComparison.OrdinalIgnoreCase))
+                            btn.FlatAppearance.BorderColor = UITheme.TableDatTruocBorder;
+                        else
+                            btn.FlatAppearance.BorderColor = UITheme.TableTrongBorder;
                     }
                 }
             }
@@ -278,9 +321,12 @@ namespace QLCF.Forms
         {
             lblHuongDan.Visible = false;
 
+            bool isHasInvoice = (ban.MaHoaDonMo.HasValue && ban.MaHoaDonMo.Value > 0) || (ban.TamTinh.HasValue && ban.TamTinh.Value > 0);
+            string displayTrangThai = isHasInvoice ? "Có khách" : (string.IsNullOrWhiteSpace(ban.TrangThai) ? "Trống" : ban.TrangThai);
+
             lblTenBanDangChon.Text = "Tên bàn: " + ban.TenBan;
             lblKhuVucDangChon.Text = "Khu vực: " + ban.TenKhuVuc;
-            lblTrangThaiBan.Text = "Trạng thái: " + ban.TrangThai;
+            lblTrangThaiBan.Text = "Trạng thái: " + displayTrangThai;
 
             if (ban.MaHoaDonMo.HasValue && ban.MaHoaDonMo.Value > 0)
             {
@@ -326,17 +372,17 @@ namespace QLCF.Forms
                 flpDanhMuc.SuspendLayout();
                 flpDanhMuc.Controls.Clear();
 
-                // Nút "Tất cả"
+                // Nút "Tất cả" (Pill Button Active mặc định)
                 Button btnAll = new Button
                 {
                     Text = "Tất cả",
-                    Height = 40,
+                    Height = 36,
                     AutoSize = true,
                     Margin = new Padding(3),
                     Cursor = Cursors.Hand,
                     FlatStyle = FlatStyle.Flat,
                     Font = new Font("Segoe UI", 9.5F, FontStyle.Bold, GraphicsUnit.Point),
-                    BackColor = Color.FromArgb(52, 152, 219),
+                    BackColor = Color.FromArgb(217, 119, 6), // Amber-600
                     ForeColor = Color.White,
                     Tag = null
                 };
@@ -363,14 +409,14 @@ namespace QLCF.Forms
                                 Button btnDM = new Button
                                 {
                                     Text = dm.TenDanhMuc,
-                                    Height = 40,
+                                    Height = 36,
                                     AutoSize = true,
                                     Margin = new Padding(3),
                                     Cursor = Cursors.Hand,
                                     FlatStyle = FlatStyle.Flat,
                                     Font = new Font("Segoe UI", 9.5F, FontStyle.Regular, GraphicsUnit.Point),
-                                    BackColor = Color.FromArgb(236, 240, 241),
-                                    ForeColor = Color.Black,
+                                    BackColor = Color.FromArgb(241, 245, 249), // Slate-100
+                                    ForeColor = Color.FromArgb(71, 85, 105), // Slate-600
                                     Tag = dm
                                 };
                                 btnDM.FlatAppearance.BorderSize = 0;
@@ -398,13 +444,13 @@ namespace QLCF.Forms
                 {
                     if (ctrl is Button b)
                     {
-                        b.BackColor = Color.FromArgb(236, 240, 241);
-                        b.ForeColor = Color.Black;
+                        b.BackColor = Color.FromArgb(241, 245, 249);
+                        b.ForeColor = Color.FromArgb(71, 85, 105);
                         b.Font = new Font("Segoe UI", 9.5F, FontStyle.Regular, GraphicsUnit.Point);
                     }
                 }
 
-                btn.BackColor = Color.FromArgb(52, 152, 219);
+                btn.BackColor = Color.FromArgb(217, 119, 6);
                 btn.ForeColor = Color.White;
                 btn.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold, GraphicsUnit.Point);
 
@@ -431,12 +477,13 @@ namespace QLCF.Forms
                 using (SqlConnection conn = Db.CreateConnection())
                 {
                     string sql = @"
-                        SELECT MaMon, TenMon, MaDM, DonGia, HinhAnh
-                        FROM dbo.MonAn
-                        WHERE TrangThai = 1
-                          AND (@MaDM IS NULL OR MaDM = @MaDM)
-                          AND (@TuKhoa IS NULL OR TenMon LIKE '%' + @TuKhoa + '%')
-                        ORDER BY TenMon";
+                        SELECT m.MaMon, m.TenMon, m.MaDM, dm.TenDanhMuc, m.DonGia, m.HinhAnh
+                        FROM dbo.MonAn m
+                        LEFT JOIN dbo.DanhMuc dm ON m.MaDM = dm.MaDM
+                        WHERE m.TrangThai = 1
+                          AND (@MaDM IS NULL OR m.MaDM = @MaDM)
+                          AND (@TuKhoa IS NULL OR m.TenMon LIKE '%' + @TuKhoa + '%')
+                        ORDER BY m.TenMon";
 
                     using (SqlCommand cmd = new SqlCommand(sql, conn))
                     {
@@ -454,12 +501,13 @@ namespace QLCF.Forms
                                     MaMon = Convert.ToInt32(reader["MaMon"]),
                                     TenMon = reader["TenMon"].ToString(),
                                     MaDM = Convert.ToInt32(reader["MaDM"]),
+                                    TenDanhMuc = reader["TenDanhMuc"] != DBNull.Value ? reader["TenDanhMuc"].ToString() : "",
                                     DonGia = Convert.ToDecimal(reader["DonGia"]),
                                     HinhAnh = reader["HinhAnh"] != DBNull.Value ? reader["HinhAnh"].ToString() : null
                                 };
 
-                                Button btnMon = TaoButtonMonAn(mon);
-                                flpMonAn.Controls.Add(btnMon);
+                                Panel pnlCard = TaoCardMonAn(mon);
+                                flpMonAn.Controls.Add(pnlCard);
                             }
                         }
                     }
@@ -474,65 +522,308 @@ namespace QLCF.Forms
             }
         }
 
-        private Button TaoButtonMonAn(MonAnModel mon)
+        private Panel TaoCardMonAn(MonAnModel mon)
         {
-            Button btn = new Button
+            Panel pnlCard = new Panel
             {
-                Width = 125,
-                Height = 90,
+                Width = 145,
+                Height = 175,
                 Margin = new Padding(6),
                 Cursor = Cursors.Hand,
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point),
-                BackColor = Color.FromArgb(250, 250, 250),
-                ForeColor = Color.FromArgb(44, 62, 80),
-                Text = $"{mon.TenMon}\n\n{DinhDangTien(mon.DonGia)}",
+                BackColor = Color.White,
                 Tag = mon
             };
 
-            btn.FlatAppearance.BorderSize = 1;
-            btn.FlatAppearance.BorderColor = Color.FromArgb(189, 195, 199);
+            bool isHovered = false;
 
-            // Kiểm tra và hiển thị ảnh nếu đường dẫn hợp lệ
-            if (!string.IsNullOrWhiteSpace(mon.HinhAnh) && File.Exists(mon.HinhAnh))
+            // Custom Paint for rounded border and hover highlight
+            pnlCard.Paint += (s, e) =>
             {
-                try
+                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                int radius = 10;
+                using (System.Drawing.Drawing2D.GraphicsPath path = UITheme.GetRoundedPath(pnlCard.ClientRectangle, radius))
                 {
-                    btn.Image = Image.FromFile(mon.HinhAnh);
-                    btn.ImageAlign = ContentAlignment.TopCenter;
-                    btn.TextAlign = ContentAlignment.BottomCenter;
+                    Color borderCol = isHovered ? UITheme.PrimaryAccent : UITheme.BorderColor;
+                    int penWidth = isHovered ? 2 : 1;
+                    using (Pen pen = new Pen(borderCol, penWidth))
+                    {
+                        e.Graphics.DrawPath(pen, path);
+                    }
                 }
-                catch
+            };
+
+            PictureBox picThumb = new PictureBox
+            {
+                Width = 135,
+                Height = 95,
+                Location = new Point(5, 5),
+                SizeMode = PictureBoxSizeMode.Zoom,
+                BackColor = Color.FromArgb(248, 250, 252),
+                Tag = mon,
+                Image = ImageHelper.LoadImageSafely(mon.HinhAnh, 135, 95, mon.TenMon)
+            };
+
+            Label lblTen = new Label
+            {
+                Text = mon.TenMon,
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold, GraphicsUnit.Point),
+                ForeColor = Color.FromArgb(15, 23, 42),
+                Location = new Point(5, 103),
+                Size = new Size(135, 42),
+                TextAlign = ContentAlignment.TopLeft,
+                AutoEllipsis = true,
+                Tag = mon
+            };
+
+            Label lblGia = new Label
+            {
+                Text = DinhDangTien(mon.DonGia),
+                Font = new Font("Segoe UI", 10.5F, FontStyle.Bold, GraphicsUnit.Point),
+                ForeColor = UITheme.PrimaryAccent, // Amber Accent
+                Location = new Point(5, 145),
+                Size = new Size(135, 25),
+                TextAlign = ContentAlignment.MiddleRight,
+                Tag = mon
+            };
+
+            pnlCard.Controls.Add(picThumb);
+            pnlCard.Controls.Add(lblTen);
+            pnlCard.Controls.Add(lblGia);
+
+            // Gán hiệu ứng Hover và sự kiện Click Fast Order cho Card và tất cả các control con
+            Control[] cardControls = new Control[] { pnlCard, picThumb, lblTen, lblGia };
+            foreach (Control ctrl in cardControls)
+            {
+                ctrl.MouseEnter += (s, e) =>
                 {
-                    // Nếu lỗi khi đọc file ảnh thì không làm sập ứng dụng
+                    isHovered = true;
+                    pnlCard.BackColor = Color.FromArgb(255, 251, 235); // Soft Amber-50
+                    pnlCard.Invalidate();
+                };
+                ctrl.MouseLeave += (s, e) =>
+                {
+                    isHovered = false;
+                    pnlCard.BackColor = Color.White;
+                    pnlCard.Invalidate();
+                };
+                ctrl.Click += (s, e) =>
+                {
+                    MonAn_FastOrderClick(mon);
+                };
+            }
+
+            return pnlCard;
+        }
+
+        private void ThucHienThemMon(MonAnModel mon, string sizeName, decimal giaPhuThu, int soLuong, string ghiChu)
+        {
+            try
+            {
+                using (SqlConnection conn = Db.CreateConnection())
+                {
+                    conn.Open();
+                    try
+                    {
+                        using (SqlCommand cmd = new SqlCommand("sp_ThemMonVaoHoaDon", conn))
+                        {
+                            cmd.CommandType = CommandType.StoredProcedure;
+                            cmd.Parameters.Add("@MaBan", SqlDbType.Int).Value = currentBan.MaBan;
+                            cmd.Parameters.Add("@MaNV", SqlDbType.Int).Value = UserSession.MaNV;
+                            cmd.Parameters.Add("@MaMon", SqlDbType.Int).Value = mon.MaMon;
+                            cmd.Parameters.Add("@SoLuong", SqlDbType.Int).Value = soLuong;
+                            cmd.Parameters.Add("@TenSize", SqlDbType.NVarChar, 20).Value = (object)sizeName ?? DBNull.Value;
+                            cmd.Parameters.Add("@GiaPhuThu", SqlDbType.Decimal).Value = giaPhuThu;
+                            cmd.Parameters.Add("@GhiChu", SqlDbType.NVarChar, 300).Value = !string.IsNullOrWhiteSpace(ghiChu) ? (object)ghiChu : DBNull.Value;
+
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    catch (SqlException ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("SP call failed, using inline SQL fallback: " + ex.Message);
+                        ThemMonVaoHoaDonTrucTiep(conn, currentBan.MaBan, UserSession.MaNV, mon.MaMon, sizeName, giaPhuThu, soLuong, ghiChu, mon.DonGia);
+                    }
+                }
+
+                LamMoiDuLieuBanDangChon();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi thêm món vào hóa đơn.\n\nChi tiết: " + ex.Message, "Lỗi CSDL", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void MonAn_FastOrderClick(MonAnModel mon)
+        {
+            if (currentBan == null)
+            {
+                lblHuongDan.Text = "⚠️ Vui lòng chọn một bàn bên trái trước khi chọn món!";
+                lblHuongDan.ForeColor = Color.Red;
+                lblHuongDan.Visible = true;
+                return;
+            }
+
+            // Mở modal chọn Size cho tất cả món ăn
+            using (FrmChonSize frmSize = new FrmChonSize(mon))
+            {
+                if (frmSize.ShowDialog() != DialogResult.OK)
+                {
+                    return; // Người dùng hủy chọn
+                }
+
+                string sizeName = frmSize.SelectedSize;
+                decimal giaPhuThu = frmSize.SelectedGiaPhuThu;
+                int soLuong = frmSize.SelectedSoLuong;
+                string ghiChu = frmSize.SelectedGhiChu;
+
+                ThucHienThemMon(mon, sizeName, giaPhuThu, soLuong, ghiChu);
+            }
+        }
+
+        private void ThemMonVaoHoaDonTrucTiep(SqlConnection conn, int maBan, int maNV, int maMon, string tenSize, decimal giaPhuThu, int soLuong, string ghiChu, decimal donGiaGoc)
+        {
+            decimal donGiaThucTe = donGiaGoc + giaPhuThu;
+            int? maHD = null;
+
+            string sqlFindHD = "SELECT TOP 1 MaHD FROM dbo.HoaDon WHERE MaBan = @MaBan AND TrangThai = 0";
+            using (SqlCommand cmdFind = new SqlCommand(sqlFindHD, conn))
+            {
+                cmdFind.Parameters.Add("@MaBan", SqlDbType.Int).Value = maBan;
+                object res = cmdFind.ExecuteScalar();
+                if (res != null && res != DBNull.Value)
+                    maHD = Convert.ToInt32(res);
+            }
+
+            if (!maHD.HasValue)
+            {
+                bool hasMaNVMo = CheckColumnExists(conn, "HoaDon", "MaNVMo");
+                bool hasMaNVTao = CheckColumnExists(conn, "HoaDon", "MaNVTao");
+                bool hasMaNV = CheckColumnExists(conn, "HoaDon", "MaNV");
+                bool hasNgayTao = CheckColumnExists(conn, "HoaDon", "NgayTao");
+                bool hasGioVao = CheckColumnExists(conn, "HoaDon", "GioVao");
+                bool hasNgayMo = CheckColumnExists(conn, "HoaDon", "NgayMo");
+                bool hasTongTienGoc = CheckColumnExists(conn, "HoaDon", "TongTienGoc");
+                bool hasTongTienTT = CheckColumnExists(conn, "HoaDon", "TongTienThanhToan");
+                bool hasTongTien = CheckColumnExists(conn, "HoaDon", "TongTien");
+
+                List<string> cols = new List<string> { "MaBan", "TrangThai" };
+                List<string> vals = new List<string> { "@MaBan", "0" };
+
+                bool needMaNVParam = false;
+                if (hasMaNVMo) { cols.Add("MaNVMo"); vals.Add("@MaNV"); needMaNVParam = true; }
+                if (hasMaNVTao) { cols.Add("MaNVTao"); vals.Add("@MaNV"); needMaNVParam = true; }
+                if (hasMaNV && !hasMaNVMo && !hasMaNVTao) { cols.Add("MaNV"); vals.Add("@MaNV"); needMaNVParam = true; }
+
+                if (hasNgayTao) { cols.Add("NgayTao"); vals.Add("GETDATE()"); }
+                if (hasGioVao) { cols.Add("GioVao"); vals.Add("GETDATE()"); }
+                if (hasNgayMo) { cols.Add("NgayMo"); vals.Add("GETDATE()"); }
+
+                if (hasTongTienGoc) { cols.Add("TongTienGoc"); vals.Add("0"); }
+                if (hasTongTienTT) { cols.Add("TongTienThanhToan"); vals.Add("0"); }
+                if (hasTongTien) { cols.Add("TongTien"); vals.Add("0"); }
+
+                string sqlCreateHD = $"INSERT INTO dbo.HoaDon ({string.Join(", ", cols)}) VALUES ({string.Join(", ", vals)}); SELECT SCOPE_IDENTITY();";
+                using (SqlCommand cmdCreate = new SqlCommand(sqlCreateHD, conn))
+                {
+                    cmdCreate.Parameters.Add("@MaBan", SqlDbType.Int).Value = maBan;
+                    if (needMaNVParam) cmdCreate.Parameters.Add("@MaNV", SqlDbType.Int).Value = maNV;
+                    maHD = Convert.ToInt32(cmdCreate.ExecuteScalar());
+                }
+
+                string sqlUpdBan = "UPDATE dbo.Ban SET DangSuDung = 1, TrangThai = N'Có người' WHERE MaBan = @MaBan";
+                using (SqlCommand cmdBan = new SqlCommand(sqlUpdBan, conn))
+                {
+                    cmdBan.Parameters.Add("@MaBan", SqlDbType.Int).Value = maBan;
+                    cmdBan.ExecuteNonQuery();
                 }
             }
 
-            btn.Click += MonAn_Click;
+            string sqlCheckCT = "SELECT COUNT(*) FROM dbo.ChiTietHoaDon WHERE MaHD = @MaHD AND MaMon = @MaMon AND ISNULL(TenSize, '') = ISNULL(@TenSize, '')";
+            int count = 0;
+            using (SqlCommand cmdCheck = new SqlCommand(sqlCheckCT, conn))
+            {
+                cmdCheck.Parameters.Add("@MaHD", SqlDbType.Int).Value = maHD.Value;
+                cmdCheck.Parameters.Add("@MaMon", SqlDbType.Int).Value = maMon;
+                cmdCheck.Parameters.Add("@TenSize", SqlDbType.NVarChar, 20).Value = (object)tenSize ?? DBNull.Value;
+                count = Convert.ToInt32(cmdCheck.ExecuteScalar());
+            }
 
-            return btn;
+            bool isThanhTienComputed = false;
+            using (SqlCommand cmdChk = new SqlCommand("SELECT is_computed FROM sys.columns WHERE object_id = OBJECT_ID('dbo.ChiTietHoaDon') AND name = 'ThanhTien'", conn))
+            {
+                object resChk = cmdChk.ExecuteScalar();
+                if (resChk != null && resChk != DBNull.Value) isThanhTienComputed = Convert.ToBoolean(resChk);
+            }
+
+            if (count > 0)
+            {
+                string sqlUpdateCT = $@"UPDATE dbo.ChiTietHoaDon 
+                    SET SoLuong = SoLuong + @SoLuong, 
+                        DonGia = @DonGia, 
+                        {(isThanhTienComputed ? "" : "ThanhTien = (SoLuong + @SoLuong) * @DonGia,")}
+                        GhiChu = CASE WHEN @GhiChu IS NOT NULL AND @GhiChu <> '' THEN @GhiChu ELSE GhiChu END 
+                    WHERE MaHD = @MaHD AND MaMon = @MaMon AND ISNULL(TenSize, '') = ISNULL(@TenSize, '')";
+                using (SqlCommand cmdUpd = new SqlCommand(sqlUpdateCT, conn))
+                {
+                    cmdUpd.Parameters.Add("@SoLuong", SqlDbType.Int).Value = soLuong;
+                    cmdUpd.Parameters.Add("@DonGia", SqlDbType.Decimal).Value = donGiaThucTe;
+                    cmdUpd.Parameters.Add("@GhiChu", SqlDbType.NVarChar, 300).Value = !string.IsNullOrWhiteSpace(ghiChu) ? (object)ghiChu : DBNull.Value;
+                    cmdUpd.Parameters.Add("@MaHD", SqlDbType.Int).Value = maHD.Value;
+                    cmdUpd.Parameters.Add("@MaMon", SqlDbType.Int).Value = maMon;
+                    cmdUpd.Parameters.Add("@TenSize", SqlDbType.NVarChar, 20).Value = (object)tenSize ?? DBNull.Value;
+                    cmdUpd.ExecuteNonQuery();
+                }
+            }
+            else
+            {
+                string sqlInsertCT = isThanhTienComputed 
+                    ? @"INSERT INTO dbo.ChiTietHoaDon (MaHD, MaMon, TenSize, SoLuong, DonGia, GhiChu) 
+                        VALUES (@MaHD, @MaMon, @TenSize, @SoLuong, @DonGia, @GhiChu)"
+                    : @"INSERT INTO dbo.ChiTietHoaDon (MaHD, MaMon, TenSize, SoLuong, DonGia, ThanhTien, GhiChu) 
+                        VALUES (@MaHD, @MaMon, @TenSize, @SoLuong, @DonGia, @SoLuong * @DonGia, @GhiChu)";
+                
+                using (SqlCommand cmdIns = new SqlCommand(sqlInsertCT, conn))
+                {
+                    cmdIns.Parameters.Add("@MaHD", SqlDbType.Int).Value = maHD.Value;
+                    cmdIns.Parameters.Add("@MaMon", SqlDbType.Int).Value = maMon;
+                    cmdIns.Parameters.Add("@TenSize", SqlDbType.NVarChar, 20).Value = (object)tenSize ?? DBNull.Value;
+                    cmdIns.Parameters.Add("@SoLuong", SqlDbType.Int).Value = soLuong;
+                    cmdIns.Parameters.Add("@DonGia", SqlDbType.Decimal).Value = donGiaThucTe;
+                    cmdIns.Parameters.Add("@GhiChu", SqlDbType.NVarChar, 300).Value = !string.IsNullOrWhiteSpace(ghiChu) ? (object)ghiChu : DBNull.Value;
+                    cmdIns.ExecuteNonQuery();
+                }
+            }
+
+            bool hasTongTienThanhToan = CheckColumnExists(conn, "HoaDon", "TongTienThanhToan");
+            bool hasTongTienCol = CheckColumnExists(conn, "HoaDon", "TongTien");
+            string updateSql = "UPDATE dbo.HoaDon SET TongTienGoc = (SELECT ISNULL(SUM(ThanhTien), 0) FROM dbo.ChiTietHoaDon WHERE MaHD = @MaHD)";
+            if (hasTongTienThanhToan) updateSql += ", TongTienThanhToan = (SELECT ISNULL(SUM(ThanhTien), 0) FROM dbo.ChiTietHoaDon WHERE MaHD = @MaHD)";
+            else if (hasTongTienCol) updateSql += ", TongTien = (SELECT ISNULL(SUM(ThanhTien), 0) FROM dbo.ChiTietHoaDon WHERE MaHD = @MaHD)";
+            updateSql += " WHERE MaHD = @MaHD";
+
+            using (SqlCommand cmdTot = new SqlCommand(updateSql, conn))
+            {
+                cmdTot.Parameters.Add("@MaHD", SqlDbType.Int).Value = maHD.Value;
+                cmdTot.ExecuteNonQuery();
+            }
         }
 
-        private void MonAn_Click(object sender, EventArgs e)
+        private bool CheckColumnExists(SqlConnection conn, string tableName, string columnName)
         {
-            if (sender is Button btn && btn.Tag is MonAnModel mon)
+            try
             {
-                // Đổi màu viền card món được chọn
-                if (currentMonAnButton != null)
+                string sql = "SELECT COUNT(*) FROM sys.columns WHERE object_id = OBJECT_ID(@TableName) AND name = @ColumnName";
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
-                    currentMonAnButton.FlatAppearance.BorderSize = 1;
-                    currentMonAnButton.FlatAppearance.BorderColor = Color.FromArgb(189, 195, 199);
-                    currentMonAnButton.BackColor = Color.FromArgb(250, 250, 250);
+                    cmd.Parameters.AddWithValue("@TableName", "dbo." + tableName);
+                    cmd.Parameters.AddWithValue("@ColumnName", columnName);
+                    object res = cmd.ExecuteScalar();
+                    return res != null && Convert.ToInt32(res) > 0;
                 }
-
-                currentMonAn = mon;
-                currentMonAnButton = btn;
-
-                btn.FlatAppearance.BorderSize = 3;
-                btn.FlatAppearance.BorderColor = Color.FromArgb(41, 128, 185);
-                btn.BackColor = Color.FromArgb(235, 245, 251);
-
-                lblMonDangChon.Text = "Món đang chọn: " + mon.TenMon;
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -541,8 +832,8 @@ namespace QLCF.Forms
             if (currentMonAnButton != null)
             {
                 currentMonAnButton.FlatAppearance.BorderSize = 1;
-                currentMonAnButton.FlatAppearance.BorderColor = Color.FromArgb(189, 195, 199);
-                currentMonAnButton.BackColor = Color.FromArgb(250, 250, 250);
+                currentMonAnButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+                currentMonAnButton.BackColor = Color.FromArgb(248, 250, 252);
             }
 
             currentMonAn = null;
@@ -577,7 +868,7 @@ namespace QLCF.Forms
                 if (!maHD.HasValue || maHD.Value <= 0)
                 {
                     dgvChiTietHoaDon.DataSource = null;
-                    lblTongTamTinh.Text = "Tổng tạm tính: 0 đ";
+                    lblTongTamTinh.Text = "Tổng: 0 đ";
                     DatLaiMonDangChon();
                     return;
                 }
@@ -587,7 +878,9 @@ namespace QLCF.Forms
                 using (SqlConnection conn = Db.CreateConnection())
                 {
                     string sql = @"
-                        SELECT ct.MaCTHD, ct.MaHD, ct.MaMon, m.TenMon, ct.SoLuong, ct.DonGia, ct.ThanhTien, ct.GhiChu
+                        SELECT ct.MaCTHD, ct.MaHD, ct.MaMon, m.TenMon, 
+                               ISNULL(ct.TenSize, '') AS TenSize, 
+                               ct.SoLuong, ct.DonGia, ct.ThanhTien, ct.GhiChu
                         FROM dbo.ChiTietHoaDon ct
                         JOIN dbo.MonAn m ON ct.MaMon = m.MaMon
                         JOIN dbo.HoaDon hd ON ct.MaHD = hd.MaHD
@@ -610,6 +903,7 @@ namespace QLCF.Forms
                                     MaHD = Convert.ToInt32(reader["MaHD"]),
                                     MaMon = Convert.ToInt32(reader["MaMon"]),
                                     TenMon = reader["TenMon"].ToString(),
+                                    TenSize = reader["TenSize"] != DBNull.Value ? reader["TenSize"].ToString() : "",
                                     SoLuong = Convert.ToInt32(reader["SoLuong"]),
                                     DonGia = Convert.ToDecimal(reader["DonGia"]),
                                     ThanhTien = Convert.ToDecimal(reader["ThanhTien"]),
@@ -622,18 +916,50 @@ namespace QLCF.Forms
 
                 dgvChiTietHoaDon.DataSource = listChiTiet;
 
-                // Format hiển thị cho DonGia và ThanhTien trong DataGridView
+                dgvChiTietHoaDon.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+                dgvChiTietHoaDon.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders;
+
+                if (dgvChiTietHoaDon.Columns["colTenMon"] != null)
+                {
+                    dgvChiTietHoaDon.Columns["colTenMon"].DataPropertyName = "TenMonHienThi";
+                    dgvChiTietHoaDon.Columns["colTenMon"].DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+                }
+                else if (dgvChiTietHoaDon.Columns["TenMon"] != null)
+                {
+                    dgvChiTietHoaDon.Columns["TenMon"].DataPropertyName = "TenMonHienThi";
+                    dgvChiTietHoaDon.Columns["TenMon"].DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+                }
+
+                // Format hiển thị và lề cho các cột trong DataGridView Hóa đơn
                 if (dgvChiTietHoaDon.Columns["colDonGia"] != null)
                 {
-                    dgvChiTietHoaDon.Columns["colDonGia"].DefaultCellStyle.Format = "N0";
+                    dgvChiTietHoaDon.Columns["colDonGia"].DefaultCellStyle.Format = "#,##0";
+                    dgvChiTietHoaDon.Columns["colDonGia"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
                 }
                 if (dgvChiTietHoaDon.Columns["colThanhTien"] != null)
                 {
-                    dgvChiTietHoaDon.Columns["colThanhTien"].DefaultCellStyle.Format = "N0";
+                    dgvChiTietHoaDon.Columns["colThanhTien"].DefaultCellStyle.Format = "#,##0";
+                    dgvChiTietHoaDon.Columns["colThanhTien"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                }
+                if (dgvChiTietHoaDon.Columns["colSoLuong"] != null)
+                {
+                    dgvChiTietHoaDon.Columns["colSoLuong"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                }
+                if (dgvChiTietHoaDon.Columns["colGiamSL"] != null)
+                {
+                    dgvChiTietHoaDon.Columns["colGiamSL"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                }
+                if (dgvChiTietHoaDon.Columns["colTangSL"] != null)
+                {
+                    dgvChiTietHoaDon.Columns["colTangSL"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                }
+                if (dgvChiTietHoaDon.Columns["colXoa"] != null)
+                {
+                    dgvChiTietHoaDon.Columns["colXoa"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
                 }
 
                 decimal tongTamTinh = listChiTiet.Sum(x => x.ThanhTien);
-                lblTongTamTinh.Text = "Tổng tạm tính: " + DinhDangTien(tongTamTinh);
+                lblTongTamTinh.Text = "Tổng: " + DinhDangTien(tongTamTinh);
 
                 DatLaiMonDangChon();
             }
@@ -664,47 +990,28 @@ namespace QLCF.Forms
                 return;
             }
 
-            // Validate 3: Số lượng phải lớn hơn 0
-            int soLuong = (int)nudSoLuong.Value;
-            if (soLuong <= 0)
+            // Mở modal chọn Size cho tất cả món ăn
+            using (FrmChonSize frmSize = new FrmChonSize(currentMonAn))
             {
-                MessageBox.Show("Số lượng phải lớn hơn 0.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            string ghiChu = txtGhiChuMon.Text.Trim();
-
-            try
-            {
-                using (SqlConnection conn = Db.CreateConnection())
+                if (frmSize.ShowDialog() != DialogResult.OK)
                 {
-                    using (SqlCommand cmd = new SqlCommand("sp_ThemMonVaoHoaDon", conn))
-                    {
-                        cmd.CommandType = CommandType.StoredProcedure;
-
-                        cmd.Parameters.Add("@MaBan", SqlDbType.Int).Value = currentBan.MaBan;
-                        cmd.Parameters.Add("@MaNV", SqlDbType.Int).Value = UserSession.MaNV;
-                        cmd.Parameters.Add("@MaMon", SqlDbType.Int).Value = currentMonAn.MaMon;
-                        cmd.Parameters.Add("@SoLuong", SqlDbType.Int).Value = soLuong;
-                        cmd.Parameters.Add("@GhiChu", SqlDbType.NVarChar, 300).Value = string.IsNullOrEmpty(ghiChu) ? (object)DBNull.Value : ghiChu;
-
-                        conn.Open();
-                        cmd.ExecuteNonQuery();
-                    }
+                    return;
                 }
 
-                MessageBox.Show("Đã thêm món vào hóa đơn.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                string sizeName = frmSize.SelectedSize;
+                decimal giaPhuThu = frmSize.SelectedGiaPhuThu;
+                int soLuong = frmSize.SelectedSoLuong;
+                string ghiChu = frmSize.SelectedGhiChu;
+
+                ThucHienThemMon(currentMonAn, sizeName, giaPhuThu, soLuong, ghiChu);
+
+                using (var toast = new FrmSuccessToast("Đã thêm món", $"Đã thêm {currentMonAn.TenMon} ({sizeName})"))
+                {
+                    toast.ShowDialog();
+                }
 
                 // Reset thông tin thêm món
-                nudSoLuong.Value = 1;
-                txtGhiChuMon.Clear();
-
-                // Cập nhật lại dữ liệu bàn đang chọn
-                LamMoiDuLieuBanDangChon();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Lỗi khi thêm món vào hóa đơn.\n\nChi tiết: " + ex.Message, "Lỗi CSDL", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ResetSelectedMonAn();
             }
         }
 
@@ -771,6 +1078,92 @@ namespace QLCF.Forms
         private void dgvChiTietHoaDon_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             ChonDongChiTietHoaDon();
+        }
+
+        private void dgvChiTietHoaDon_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+
+            string colName = dgvChiTietHoaDon.Columns[e.ColumnIndex].Name;
+            if (dgvChiTietHoaDon.Rows[e.RowIndex].DataBoundItem is ChiTietHoaDonModel item)
+            {
+                if (colName == "colGiamSL")
+                {
+                    int newSL = item.SoLuong - 1;
+                    CapNhatSoLuongCTHDDirect(item.MaCTHD, newSL);
+                }
+                else if (colName == "colTangSL")
+                {
+                    int newSL = item.SoLuong + 1;
+                    CapNhatSoLuongCTHDDirect(item.MaCTHD, newSL);
+                }
+                else if (colName == "colXoa")
+                {
+                    CapNhatSoLuongCTHDDirect(item.MaCTHD, 0);
+                }
+            }
+        }
+
+        private void CapNhatSoLuongCTHDDirect(int maCTHD, int soLuongMoi)
+        {
+            try
+            {
+                using (SqlConnection conn = Db.CreateConnection())
+                {
+                    using (SqlCommand cmd = new SqlCommand("sp_CapNhatSoLuongMon", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.Add("@MaNV", SqlDbType.Int).Value = UserSession.MaNV;
+                        cmd.Parameters.Add("@MaCTHD", SqlDbType.Int).Value = maCTHD;
+                        cmd.Parameters.Add("@SoLuongMoi", SqlDbType.Int).Value = Math.Max(0, soLuongMoi);
+
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                LamMoiDuLieuBanDangChon();
+                DatLaiMonDangChon();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi cập nhật số lượng món.\n\nChi tiết: " + ex.Message, "Lỗi CSDL", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void dgvChiTietHoaDon_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+
+            string colName = dgvChiTietHoaDon.Columns[e.ColumnIndex].Name;
+            if (colName == "colGhiChu" && dgvChiTietHoaDon.Rows[e.RowIndex].DataBoundItem is ChiTietHoaDonModel item)
+            {
+                string ghiChuMoi = Convert.ToString(dgvChiTietHoaDon.Rows[e.RowIndex].Cells["colGhiChu"].Value);
+                CapNhatGhiChuCTHDDirect(item.MaCTHD, ghiChuMoi);
+            }
+        }
+
+        private void CapNhatGhiChuCTHDDirect(int maCTHD, string ghiChu)
+        {
+            try
+            {
+                using (SqlConnection conn = Db.CreateConnection())
+                {
+                    string sql = "UPDATE dbo.ChiTietHoaDon SET GhiChu = @GhiChu WHERE MaCTHD = @MaCTHD";
+                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.Add("@MaCTHD", SqlDbType.Int).Value = maCTHD;
+                        cmd.Parameters.Add("@GhiChu", SqlDbType.NVarChar, 300).Value = string.IsNullOrWhiteSpace(ghiChu) ? (object)DBNull.Value : ghiChu.Trim();
+
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi lưu ghi chú món.\n\nChi tiết: " + ex.Message, "Lỗi CSDL", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void dgvChiTietHoaDon_SelectionChanged(object sender, EventArgs e)
@@ -858,7 +1251,10 @@ namespace QLCF.Forms
                     }
                 }
 
-                MessageBox.Show("Cập nhật số lượng thành công.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                using (var toast = new FrmSuccessToast("Cập nhật số lượng", "Thành công"))
+                {
+                    toast.ShowDialog();
+                }
 
                 LamMoiDuLieuBanDangChon();
                 DatLaiMonDangChon();
@@ -911,7 +1307,10 @@ namespace QLCF.Forms
                     }
                 }
 
-                MessageBox.Show("Đã xóa món khỏi hóa đơn.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                using (var toast = new FrmSuccessToast("Đã xóa món", "Cập nhật dữ liệu thành công"))
+                {
+                    toast.ShowDialog();
+                }
 
                 LamMoiDuLieuBanDangChon();
                 DatLaiMonDangChon();
@@ -929,6 +1328,86 @@ namespace QLCF.Forms
         private void btnThanhToan_Click(object sender, EventArgs e)
         {
             MoFormThanhToan();
+        }
+
+        private void LoadKhuyenMai()
+        {
+            try
+            {
+                cboKhuyenMai.Items.Clear();
+                
+                using (SqlConnection conn = Db.CreateConnection())
+                {
+                    string sql = "SELECT * FROM dbo.KhuyenMai WHERE TrangThai = 1 AND NgayBatDau <= GETDATE() AND (NgayKetThuc >= CAST(GETDATE() AS DATE) OR NgayKetThuc IS NULL) AND (SoLuotConLai IS NULL OR SoLuotConLai > 0)";
+                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    {
+                        conn.Open();
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                KhuyenMaiModel km = new KhuyenMaiModel
+                                {
+                                    MaKM = Convert.ToInt32(reader["MaKM"]),
+                                    TenKM = reader["TenKM"].ToString(),
+                                    MaKhuyenMai = reader["MaKhuyenMai"].ToString(),
+                                    LoaiGiamGia = Convert.ToInt32(reader["LoaiGiamGia"]),
+                                    GiaTriGiam = Convert.ToDecimal(reader["GiaTriGiam"]),
+                                    GiamToiDa = reader["GiamToiDa"] != DBNull.Value ? (decimal?)Convert.ToDecimal(reader["GiamToiDa"]) : null,
+                                    DieuKienToiThieu = Convert.ToDecimal(reader["DieuKienToiThieu"]),
+                                    NgayBatDau = Convert.ToDateTime(reader["NgayBatDau"]),
+                                    NgayKetThuc = Convert.ToDateTime(reader["NgayKetThuc"]),
+                                    SoLuotConLai = reader["SoLuotConLai"] != DBNull.Value ? (int?)Convert.ToInt32(reader["SoLuotConLai"]) : null,
+                                    TrangThai = Convert.ToBoolean(reader["TrangThai"])
+                                };
+                                cboKhuyenMai.Items.Add(km);
+                            }
+                        }
+                    }
+                }
+
+                cboKhuyenMai.DisplayMember = "TenKM";
+                cboKhuyenMai.ValueMember = "MaKhuyenMai";
+                
+                if (cboKhuyenMai.Items.Count > 0)
+                {
+                    cboKhuyenMai.SelectedIndex = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Ignored or log
+            }
+        }
+
+        private void cboKhuyenMai_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (chkApDungKhuyenMai.Checked)
+            {
+                // Re-evaluate if valid
+                chkApDungKhuyenMai_CheckedChanged(null, null);
+            }
+        }
+
+        private void chkApDungKhuyenMai_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkApDungKhuyenMai.Checked)
+            {
+                decimal tongTamTinh = currentBan?.TamTinh ?? 0;
+                if (cboKhuyenMai.SelectedItem is KhuyenMaiModel km)
+                {
+                    if (tongTamTinh < km.DieuKienToiThieu)
+                    {
+                        MessageBox.Show($"Chưa đủ điều kiện! Đơn hàng cần tối thiểu {km.DieuKienToiThieu:N0}đ để áp dụng mã này.", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        chkApDungKhuyenMai.Checked = false;
+                        return;
+                    }
+                }
+                else
+                {
+                    chkApDungKhuyenMai.Checked = false;
+                }
+            }
         }
 
         private void MoFormThanhToan()
@@ -955,8 +1434,17 @@ namespace QLCF.Forms
                 return;
             }
 
+            // Calculate KM
+            decimal soTienKhuyenMai = 0;
+            string maKMApDung = "";
+            if (chkApDungKhuyenMai.Checked && cboKhuyenMai.SelectedItem is KhuyenMaiModel km)
+            {
+                soTienKhuyenMai = km.TinhSoTienGiam(tongTamTinh);
+                maKMApDung = km.MaKhuyenMai;
+            }
+
             // Mở Form thanh toán dạng Dialog
-            using (FrmThanhToan frm = new FrmThanhToan(currentBan.MaHoaDonMo.Value, currentBan.MaBan, currentBan.TenBan, tongTamTinh))
+            using (FrmThanhToan frm = new FrmThanhToan(currentBan.MaHoaDonMo.Value, currentBan.MaBan, currentBan.TenBan, tongTamTinh, soTienKhuyenMai, maKMApDung))
             {
                 if (frm.ShowDialog(this) == DialogResult.OK)
                 {
@@ -1105,6 +1593,74 @@ namespace QLCF.Forms
         private void btnDong_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        #endregion
+
+        #region 6. SHIFT CHECKOUT LOGIC
+
+        private void InitShiftTimer()
+        {
+            if (UserSession.CurrentShiftId > 0)
+            {
+                var checkInTime = ShiftService.GetShiftCheckInTime(UserSession.CurrentShiftId);
+                if (checkInTime.HasValue)
+                {
+                    shiftStartTime = checkInTime.Value;
+                    shiftTimer.Interval = 1000;
+                    shiftTimer.Tick += ShiftTimer_Tick;
+                    shiftTimer.Start();
+                    
+                    // Trigger once immediately
+                    ShiftTimer_Tick(null, EventArgs.Empty);
+                }
+                else
+                {
+                    lblShiftInfo.Text = "Thời gian vào ca: Không xác định";
+                }
+            }
+            else
+            {
+                lblShiftInfo.Text = "Không có ca làm việc";
+                lblActiveShiftBadge.Text = "⚪ Không trong ca";
+                lblActiveShiftBadge.ForeColor = Color.Gray;
+                btnKetCaTopBar.Enabled = false;
+            }
+        }
+
+        private void ShiftTimer_Tick(object sender, EventArgs e)
+        {
+            TimeSpan duration = DateTime.Now - shiftStartTime;
+            lblShiftInfo.Text = $"Vào ca: {shiftStartTime:HH:mm} | Thời gian ca: {duration.Hours:D2}h {duration.Minutes:D2}m {duration.Seconds:D2}s";
+        }
+
+        private void btnKetCaTopBar_Click(object sender, EventArgs e)
+        {
+            TimeSpan duration = DateTime.Now - shiftStartTime;
+            string msg = $"Xác nhận KẾT CA LÀM VIỆC?\n- Thời gian vào ca: {shiftStartTime:HH:mm dd/MM/yyyy}\n- Thời gian kết ca: {DateTime.Now:HH:mm dd/MM/yyyy}\n- Thời lượng ca này: {(int)duration.TotalHours} giờ {duration.Minutes} phút";
+
+            if (MessageBox.Show(msg, "Xác nhận kết ca", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                if (ShiftService.DirectCheckOut(UserSession.CurrentShiftId))
+                {
+                    shiftTimer.Stop();
+                    MessageBox.Show("Kết ca thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    
+                    FrmMain main = this.FindForm() as FrmMain;
+                    if (main != null)
+                    {
+                        main.Logout();
+                    }
+                    else
+                    {
+                        this.Close();
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Có lỗi xảy ra khi cập nhật ca làm.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
 
         #endregion

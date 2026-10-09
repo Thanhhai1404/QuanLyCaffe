@@ -1,8 +1,10 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Drawing;
 using System.Windows.Forms;
 using QLCF.Data;
+using QLCF.Helpers;
 using QLCF.Models;
 
 namespace QLCF.Forms
@@ -15,12 +17,21 @@ namespace QLCF.Forms
 
             this.Load += FrmLichSuHoaDon_Load;
             this.btnLoc.Click += btnLoc_Click;
+            if (this.btnXemChiTiet != null) this.btnXemChiTiet.Click += (s, ev) => XemChiTietHoaDonDangChon();
             this.btnLamMoi.Click += btnLamMoi_Click;
             this.btnDong.Click += btnDong_Click;
+
+            this.dgvLichSuHoaDon.CellDoubleClick += dgvLichSuHoaDon_CellDoubleClick;
         }
 
         private void FrmLichSuHoaDon_Load(object sender, EventArgs e)
         {
+            UITheme.ApplyStyleToForm(this);
+            if (btnLoc != null) UITheme.ApplyStyleToButton(btnLoc, isPrimary: true);
+            if (btnXemChiTiet != null) UITheme.ApplyStyleToButton(btnXemChiTiet);
+            if (btnLamMoi != null) UITheme.ApplyStyleToButton(btnLamMoi);
+            if (btnDong != null) UITheme.ApplyStyleToButton(btnDong);
+
             // Kiểm tra quyền Admin
             if (!UserSession.IsAdmin)
             {
@@ -165,9 +176,34 @@ namespace QLCF.Forms
             }
         }
 
+        private void dgvLichSuHoaDon_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                XemChiTietHoaDonDangChon();
+            }
+        }
+
+        private void XemChiTietHoaDonDangChon()
+        {
+            if (dgvLichSuHoaDon.CurrentRow != null)
+            {
+                DataRowView drv = dgvLichSuHoaDon.CurrentRow.DataBoundItem as DataRowView;
+                if (drv != null && drv["MaHD"] != DBNull.Value)
+                {
+                    int maHD = Convert.ToInt32(drv["MaHD"]);
+                    using (FrmChiTietHoaDonModal frm = new FrmChiTietHoaDonModal(maHD))
+                    {
+                        frm.ShowDialog(this);
+                    }
+                }
+            }
+        }
+
         private DataTable ConvertToDisplayTable(DataTable dtRaw)
         {
             DataTable dt = new DataTable();
+            dt.Columns.Add("MaHD", typeof(int));
             dt.Columns.Add("MaHDText", typeof(string));
             dt.Columns.Add("TenBan", typeof(string));
             dt.Columns.Add("TenKhuVuc", typeof(string));
@@ -187,6 +223,7 @@ namespace QLCF.Forms
                 DataRow newRow = dt.NewRow();
 
                 int maHD = Convert.ToInt32(row["MaHD"]);
+                newRow["MaHD"] = maHD;
                 newRow["MaHDText"] = "HD" + maHD.ToString("D5");
                 newRow["TenBan"] = row["TenBan"] != DBNull.Value ? row["TenBan"].ToString() : "";
                 newRow["TenKhuVuc"] = row["TenKhuVuc"] != DBNull.Value ? row["TenKhuVuc"].ToString() : "";
