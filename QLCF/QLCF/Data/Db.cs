@@ -10,7 +10,7 @@ namespace QLCF.Data
     class Db
     {
         public static readonly string ConnectionString =
-            @"Data Source=DOHAI\SQLEXPRESS;Initial Catalog=QLCF;Integrated Security=True;TrustServerCertificate=True";
+            @"Data Source=.\SQLEXPRESS;Initial Catalog=QLCF;Integrated Security=True;TrustServerCertificate=True";
 
         public static SqlConnection CreateConnection()
         {
